@@ -3,192 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>The Heart Tree | Infinity</title>
+    <title>NEBULA | The Absolute Experience</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            background: #050505; 
-            overflow: hidden; 
-            font-family: 'Arial', sans-serif;
-        }
-        canvas { display: block; }
-        
-        #overlay {
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+        #ui {
             position: fixed;
             inset: 0;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 10;
-            background: rgba(0,0,0,0.9);
-            transition: opacity 1.5s ease;
-        }
-
-        .btn-glow {
-            padding: 20px 40px;
-            background: none;
-            border: 2px solid #ff3366;
-            color: #ff3366;
-            font-size: 1.2rem;
-            letter-spacing: 5px;
-            cursor: pointer;
-            border-radius: 50px;
-            box-shadow: 0 0 20px rgba(255, 51, 102, 0.4);
-            transition: 0.4s;
-        }
-
-        .btn-glow:hover {
-            background: #ff3366;
-            color: #fff;
-            box-shadow: 0 0 50px #ff3366;
-        }
-
-        #message-box {
-            position: fixed;
-            top: 20%;
-            width: 100%;
-            text-align: center;
-            z-index: 5;
             pointer-events: none;
-        }
-
-        .wish {
-            position: absolute;
-            width: 100%;
             color: white;
-            font-size: 2.5rem;
-            font-family: 'Georgia', serif;
-            text-shadow: 0 0 20px rgba(255,255,255,0.8);
-            opacity: 0;
-            transform: translateY(30px);
+            font-family: 'Inter', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1em;
+            mix-blend-mode: difference;
         }
+        h1 { font-size: 10vw; margin: 0; opacity: 0; transform: scale(0.8); }
+        .instruction { position: absolute; bottom: 10%; letter-spacing: 0.3em; font-size: 12px; opacity: 0.5; }
     </style>
 </head>
 <body>
-
-    <div id="overlay">
-        <button class="btn-glow" id="startBtn">GIVE LIFE</button>
+    <div id="ui">
+        <h1 id="title">LEGEND</h1>
+        <div class="instruction">TOUCH THE VOID</div>
     </div>
-
-    <div id="message-box">
-        <div class="wish">Happy Birthday</div>
-        <div class="wish">To a Special Soul</div>
-        <div class="wish">Keep Shining</div>
-        <div class="wish">Like the Stars</div>
-    </div>
-
-    <canvas id="canvas"></canvas>
+    <canvas id="glcanvas"></canvas>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <script id="v-shader" type="x-shader/x-vertex">
+        attribute vec2 position;
+        void main() { gl_Position = vec4(position, 0.0, 1.0); }
+    </script>
+
+    <script id="f-shader" type="x-shader/x-fragment">
+        precision highp float;
+        uniform vec2 resolution;
+        uniform float time;
+        uniform vec2 pointer;
+        uniform float pointerActive;
+
+        // Simplex Noise for Organic Fluid Movement
+        vec3 permute(vec3 x) { return mod(((x*34.0)+1.0)*x, 289.0); }
+        float snoise(vec2 v){
+          const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+          vec2 i  = floor(v + dot(v, C.yy));
+          vec2 x0 = v -   i + dot(i, C.xx);
+          vec2 i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+          vec4 x12 = x0.xyxy + C.xxzz;
+          x12.xy -= i1;
+          i = mod(i, 289.0);
+          vec3 p = permute(permute(i.y + vec3(0.0, i1.y, 1.0)) + i.x + vec3(0.0, i1.x, 1.0));
+          vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+          m = m*m; m = m*m;
+          vec3 x = 2.0 * fract(p * C.www) - 1.0;
+          vec3 h = abs(x) - 0.5;
+          vec3 ox = floor(x + 0.5);
+          vec3 a0 = x - ox;
+          m *= 1.79284291400159 - 0.85373472095314 * (a0*a0 + h*h);
+          vec3 g;
+          g.x  = a0.x  * x0.x  + h.x  * x0.y;
+          g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+          return 130.0 * dot(m, g);
+        }
+
+        void main() {
+            vec2 uv = gl_FragCoord.xy / resolution.xy;
+            float aspect = resolution.x / resolution.y;
+            vec2 p = uv - 0.5;
+            p.x *= aspect;
+
+            vec2 m = pointer / resolution.xy - 0.5;
+            m.x *= aspect;
+
+            // Fluid math
+            float d = length(p - m);
+            float noise = snoise(p * 2.0 + time * 0.1);
+            
+            // Neon light strands
+            float c = 0.0;
+            for(float i=1.0; i<6.0; i++) {
+                p.x += 0.1 / i * sin(i * 3.0 * p.y + time + noise);
+                p.y += 0.1 / i * cos(i * 3.0 * p.x + time + noise);
+                c += abs(0.005 / p.x);
+            }
+
+            // Interactive burst
+            float burst = smoothstep(0.2, 0.0, d) * pointerActive;
+            
+            vec3 color = vec3(c * 0.2, c * 0.5, c); // Cyber Blue base
+            color += vec3(burst, burst * 0.3, burst * 0.8); // Golden flash
+            
+            gl_FragColor = vec4(color, 1.0);
+        }
+    </script>
+
     <script>
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        let width, height;
-        let particles = [];
-        let treeGrown = false;
+        const canvas = document.getElementById('glcanvas');
+        const gl = canvas.getContext('webgl');
+        
+        let program;
+        let positionBuffer;
+        let startTime = Date.now();
+        let pointer = { x: 0, y: 0, active: 0 };
+
+        function initGL() {
+            const vsSource = document.getElementById('v-shader').text;
+            const fsSource = document.getElementById('f-shader').text;
+
+            const vs = gl.createShader(gl.VERTEX_SHADER);
+            gl.shaderSource(vs, vsSource);
+            gl.compileShader(vs);
+
+            const fs = gl.createShader(gl.FRAGMENT_SHADER);
+            gl.shaderSource(fs, fsSource);
+            gl.compileShader(fs);
+
+            program = gl.createProgram();
+            gl.attachShader(program, vs);
+            gl.attachShader(program, fs);
+            gl.linkProgram(program);
+            gl.useProgram(program);
+
+            positionBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]), gl.STATIC_DRAW);
+
+            const posAttrib = gl.getAttribLocation(program, "position");
+            gl.enableVertexAttribArray(posAttrib);
+            gl.vertexAttribPointer(posAttrib, 2, gl.FLOAT, false, 0, 0);
+
+            resize();
+            render();
+            
+            // Intro Sequence
+            gsap.to("#title", { opacity: 1, scale: 1, duration: 2, ease: "expo.out", delay: 0.5 });
+        }
 
         function resize() {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
+            canvas.width = window.innerWidth * window.devicePixelRatio;
+            canvas.height = window.innerHeight * window.devicePixelRatio;
+            gl.viewport(0, 0, canvas.width, canvas.height);
         }
+
+        function render() {
+            gl.clearColor(0, 0, 0, 1);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+
+            const resLoc = gl.getUniformLocation(program, "resolution");
+            gl.uniform2f(resLoc, canvas.width, canvas.height);
+
+            const timeLoc = gl.getUniformLocation(program, "time");
+            gl.uniform1f(timeLoc, (Date.now() - startTime) * 0.001);
+
+            const ptrLoc = gl.getUniformLocation(program, "pointer");
+            gl.uniform2f(ptrLoc, pointer.x * window.devicePixelRatio, (window.innerHeight - pointer.y) * window.devicePixelRatio);
+
+            const actLoc = gl.getUniformLocation(program, "pointerActive");
+            gl.uniform1f(actLoc, pointer.active);
+
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+            requestAnimationFrame(render);
+        }
+
         window.addEventListener('resize', resize);
-        resize();
+        
+        const handleMove = (e) => {
+            const x = e.touches ? e.touches[0].clientX : e.clientX;
+            const y = e.touches ? e.touches[0].clientY : e.clientY;
+            pointer.x = x;
+            pointer.y = y;
+            pointer.active = 1.0;
+        };
 
-        // 1. STAR SYSTEM
-        class Star {
-            constructor() {
-                this.x = Math.random() * width;
-                this.y = Math.random() * height;
-                this.size = Math.random() * 1.5;
-                this.blink = Math.random() * 0.02;
-                this.a = Math.random();
-            }
-            draw() {
-                this.a += this.blink;
-                if(this.a > 1 || this.a < 0) this.blink *= -1;
-                ctx.globalAlpha = this.a;
-                ctx.fillStyle = "white";
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
-                ctx.fill();
-            }
-        }
-        const stars = Array.from({length: 200}, () => new Star());
-
-        // 2. THE GOD-LEVEL HEART TREE (Recursive)
-        function drawHeart(x, y, size, color) {
-            ctx.fillStyle = color;
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.bezierCurveTo(x, y - size/2, x - size, y - size/2, x - size, y);
-            ctx.bezierCurveTo(x - size, y + size/2, x, y + size, x, y + size);
-            ctx.bezierCurveTo(x, y + size, x + size, y + size/2, x + size, y);
-            ctx.bezierCurveTo(x + size, y - size/2, x, y - size/2, x, y);
-            ctx.fill();
-        }
-
-        function drawBranch(x, y, len, angle, branchWidth) {
-            ctx.beginPath();
-            ctx.save();
-            ctx.strokeStyle = "#4d2600"; // Wood color
-            ctx.lineWidth = branchWidth;
-            ctx.translate(x, y);
-            ctx.rotate(angle * Math.PI / 180);
-            ctx.moveTo(0, 0);
-            ctx.lineTo(0, -len);
-            ctx.stroke();
-
-            if (len < 15) {
-                // Draw Heart Leaf
-                drawHeart(0, -len, 10, `rgba(255, ${Math.random()*100 + 50}, ${Math.random()*150 + 100}, 0.8)`);
-                ctx.restore();
-                return;
-            }
-
-            // Growing logic
-            setTimeout(() => {
-                drawBranch(0, -len, len * 0.8, angle - 15, branchWidth * 0.7);
-                drawBranch(0, -len, len * 0.8, angle + 15, branchWidth * 0.7);
-            }, 50);
-
-            ctx.restore();
-        }
-
-        // 3. MAIN LOOP
-        function animate() {
-            ctx.clearRect(0, 0, width, height);
-            
-            // Background Gradient
-            const g = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, width);
-            g.addColorStop(0, '#1a050d');
-            g.addColorStop(1, '#050505');
-            ctx.fillStyle = g;
-            ctx.fillRect(0,0, width, height);
-
-            stars.forEach(s => s.draw());
-            requestAnimationFrame(animate);
-        }
-        animate();
-
-        // 4. THE SEQUENCE
-        document.getElementById('startBtn').addEventListener('click', () => {
-            document.getElementById('overlay').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('overlay').style.display = 'none';
-                
-                // Grow Tree
-                drawBranch(width/2, height, height/4, 0, 10);
-                
-                // Animate Words
-                const wishes = document.querySelectorAll('.wish');
-                const tl = gsap.timeline();
-                
-                wishes.forEach((w, i) => {
-                    tl.to(w, { opacity: 1, y: 0, duration: 1.5, ease: "power2.out" })
-                      .to(w, { opacity: 0, y: -30, duration: 1, ease: "power2.in" }, "+=1");
-                });
-            }, 1000);
+        window.addEventListener('mousemove', handleMove);
+        window.addEventListener('touchstart', (e) => { pointer.active = 1.0; handleMove(e); });
+        window.addEventListener('touchend', () => { 
+            gsap.to(pointer, { active: 0, duration: 1 });
         });
+
+        initGL();
     </script>
 </body>
 </html>
