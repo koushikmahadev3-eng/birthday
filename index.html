@@ -1,365 +1,273 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-
-<html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
-
+<!DOCTYPE html>
+<html lang="en">
 <head>
-
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
-    <title>HBD love</title>	    
-
-    <link type="text/css" rel="stylesheet" href="file/default.css">
-
-    <script type="text/javascript" src="file/jquery.min.js"></script>
-
-    <script type="text/javascript" src="file/jscex.min.js"></script>
-
-    <script type="text/javascript" src="file/jscex-parser.js"></script>
-
-    <script type="text/javascript" src="file/jscex-jit.js"></script>
-
-    <script type="text/javascript" src="file/jscex-builderbase.min.js"></script>
-
-    <script type="text/javascript" src="file/jscex-async.min.js"></script>
-
-    <script type="text/javascript" src="file/jscex-async-powerpack.min.js"></script>
-
-    <script type="text/javascript" src="file/function.js" charset="utf-8"></script>
-
-    <script type="text/javascript" src="file/love.js" charset="utf-8"></script>
-
-    <script>
-
-        function playAudio() {
-
-            var audio = document.getElementById("myAudio");
-
-            audio.play();
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Infinite Heart Tree</title>
+    <style>
+        :root {
+            --bg: #050505;
+            --heart-red: #ff3366;
+            --gold: #ffd700;
         }
 
-    </script>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
+        body {
+            background-color: var(--bg);
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        #master-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        #ui-layer {
+            position: relative;
+            z-index: 10;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            pointer-events: none;
+            padding: 40px 20px;
+        }
+
+        .message-container {
+            text-align: center;
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+        .main-title {
+            font-size: 3rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            background: linear-gradient(to bottom, #fff, var(--heart-red));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .sub-text {
+            font-size: 0.9rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--heart-red);
+            opacity: 0.8;
+        }
+
+        #gate {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .heart-loader {
+            width: 100px;
+            height: 100px;
+            background: var(--heart-red);
+            position: relative;
+            transform: rotate(-45deg);
+            animation: beat 0.8s infinite;
+            cursor: pointer;
+            border: none;
+        }
+
+        .heart-loader::before, .heart-loader::after {
+            content: '';
+            width: 100px;
+            height: 100px;
+            background: var(--heart-red);
+            border-radius: 50%;
+            position: absolute;
+        }
+
+        .heart-loader::before { top: -50px; left: 0; }
+        .heart-loader::after { top: 0; left: 50px; }
+
+        @keyframes beat {
+            0% { transform: rotate(-45deg) scale(1); }
+            50% { transform: rotate(-45deg) scale(1.1); }
+            100% { transform: rotate(-45deg) scale(1); }
+        }
+
+        .instruction {
+            position: absolute;
+            bottom: 20%;
+            color: white;
+            letter-spacing: 2px;
+            font-size: 10px;
+            opacity: 0.6;
+        }
+    </style>
 </head>
-
 <body>
 
-    <div id="main">
-
-        <div id="error"><a href="http://www.google.cn/chrome/intl/zh-CN/landing_chrome.html?hl=zh-CN&brand=CHMI">Chrome</a> (<a href="http://firefox.com.cn/download/">Firefox</a>)</div>
-
-        <audio autoplay="autoplay" height="100" width="100" id="myAudio">
-
-            <source src="aud.mp3" type="audio/mp3" />
-
-            <embed height="100" width="100" src="aud.mp3" />
-
-        </audio>
-
-        <div id="wrap">
-
-            <div id="text">
-
-                <div id="code">
-
-                    <span class="say">Hey you 💞</span><br>
-
-                    <span class="say">Happy Birthday 🎈</span><br>
-
-                    <span class="say">May God bless you 🍀</span><br>
-
-                    <span class="say">And give u many happiness 💕</span><br>
-
-                    <span class="say">Just saying... you're pretty awesome ❤️</span><br>
-
-                    <span class="say">Sending good vibes and maybe a wink 😏</span><br>
-
-                    <span class="say">Hope u have a great day today ❤️😘</span><br>
-
-                </div>
-
-            </div>
-
-            <div id="clock-box">
-
-                <span id="clock">577 days 0 hours 0 minutes 0 seconds</span> <!-- Change to "6940 days..." if needed -->
-
-            </div>
-
-            <canvas id="canvas" width="1100" height="680"></canvas>
-
-        </div>
-
+    <div id="gate">
+        <button class="heart-loader" id="start-btn"></button>
+        <div class="instruction">TAP THE HEART TO GROW LIFE</div>
     </div>
 
+    <div id="ui-layer">
+        <div class="message-container" id="msg-box">
+            <h1 class="main-title">Happy Birthday</h1>
+            <p class="sub-text">Legendary Soul</p>
+        </div>
+    </div>
 
+    <canvas id="master-canvas"></canvas>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 
     <script>
+        const canvas = document.getElementById('master-canvas');
+        const ctx = canvas.getContext('2d');
+        const startBtn = document.getElementById('start-btn');
+        const gate = document.getElementById('gate');
 
-    (function() {
+        let width, height;
+        let branches = [];
+        let leaves = [];
+        let stars = [];
 
-        var canvas = $('#canvas');
-
-		
-
-        if (!canvas[0].getContext) {
-
-            $("#error").show();
-
-            return false;
-
+        function init() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            stars = [];
+            for(let i=0; i<150; i++) {
+                stars.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    s: Math.random() * 2,
+                    o: Math.random()
+                });
+            }
         }
 
+        window.addEventListener('resize', init);
+        init();
 
-
-        var width = canvas.width();
-
-        var height = canvas.height();        
-
-        canvas.attr("width", width);
-
-        canvas.attr("height", height);
-
-
-
-        var opts = {
-
-            seed: {
-
-                x: width / 2 - 20,
-
-                color: "rgb(190, 26, 37)",
-
-                scale: 2
-
-            },
-
-            branch: [
-
-                [535, 680, 570, 250, 500, 200, 30, 100, [
-
-                    [540, 500, 455, 417, 340, 400, 13, 100, [
-
-                        [450, 435, 434, 430, 394, 395, 2, 40]
-
-                    ]],
-
-                    [550, 445, 600, 356, 680, 345, 12, 100, [
-
-                        [578, 400, 648, 409, 661, 426, 3, 80]
-
-                    ]],
-
-                    [539, 281, 537, 248, 534, 217, 3, 40],
-
-                    [546, 397, 413, 247, 328, 244, 9, 80, [
-
-                        [427, 286, 383, 253, 371, 205, 2, 40],
-
-                        [498, 345, 435, 315, 395, 330, 4, 60]
-
-                    ]],
-
-                    [546, 357, 608, 252, 678, 221, 6, 100, [
-
-                        [590, 293, 646, 277, 648, 271, 2, 80]
-
-                    ]]
-
-                ]] 
-
-            ],
-
-            bloom: {
-
-                num: 700,
-
-                width: 1080,
-
-                height: 650,
-
-            },
-
-            footer: {
-
-                width: 1200,
-
-                height: 5,
-
-                speed: 10,
-
+        // --- TREE LOGIC ---
+        class Branch {
+            constructor(begin, end, thickness, color) {
+                this.begin = begin;
+                this.end = end;
+                this.thickness = thickness;
+                this.color = color;
+                this.finished = false;
+                this.currEnd = { x: begin.x, y: begin.y };
             }
 
+            draw() {
+                ctx.beginPath();
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = this.thickness;
+                ctx.lineCap = 'round';
+                ctx.moveTo(this.begin.x, this.begin.y);
+                ctx.lineTo(this.currEnd.x, this.currEnd.y);
+                ctx.stroke();
+            }
+
+            grow() {
+                this.currEnd.x += (this.end.x - this.currEnd.x) * 0.1;
+                this.currEnd.y += (this.end.y - this.currEnd.y) * 0.1;
+            }
         }
 
-
-
-        var tree = new Tree(canvas[0], width, height, opts);
-
-        var seed = tree.seed;
-
-        var foot = tree.footer;
-
-        var hold = 1;
-
-
-
-        canvas.click(function(e) {
-
-            playAudio();
-
-            var offset = canvas.offset(), x, y;
-
-            x = e.pageX - offset.left;
-
-            y = e.pageY - offset.top;
-
-            if (seed.hover(x, y)) {
-
-                hold = 0; 
-
-                canvas.unbind("click");
-
-                canvas.unbind("mousemove");
-
-                canvas.removeClass('hand');
-
+        class Leaf {
+            constructor(pos) {
+                this.pos = pos;
+                this.size = 0;
+                this.maxSize = Math.random() * 8 + 5;
+                this.alpha = 0;
             }
 
-        }).mousemove(function(e) {
+            draw() {
+                ctx.save();
+                ctx.translate(this.pos.x, this.pos.y);
+                ctx.rotate(-Math.PI / 4);
+                ctx.fillStyle = `rgba(255, 51, 102, ${this.alpha})`;
+                
+                // Drawing small heart leaf
+                ctx.beginPath();
+                ctx.fillRect(0, 0, this.size, this.size);
+                ctx.arc(this.size/2, 0, this.size/2, 0, Math.PI * 2);
+                ctx.arc(0, this.size/2, this.size/2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
 
-            var offset = canvas.offset(), x, y;
+                if(this.size < this.maxSize) this.size += 0.2;
+                if(this.alpha < 0.8) this.alpha += 0.02;
+            }
+        }
 
-            x = e.pageX - offset.left;
+        function createTree(x, y, len, angle, thick) {
+            let dx = len * Math.sin(angle);
+            let dy = len * Math.cos(angle);
+            let end = { x: x + dx, y: y - dy };
+            let b = new Branch({x, y}, end, thick, '#2d1a1a');
+            branches.push(b);
 
-            y = e.pageY - offset.top;
+            if(len > 10) {
+                setTimeout(() => {
+                    createTree(end.x, end.y, len * 0.75, angle + 0.5, thick * 0.7);
+                    createTree(end.x, end.y, len * 0.75, angle - 0.5, thick * 0.7);
+                }, 400);
+            } else {
+                setTimeout(() => {
+                    leaves.push(new Leaf(end));
+                }, 500);
+            }
+        }
 
-            canvas.toggleClass('hand', seed.hover(x, y));
+        function render() {
+            ctx.fillStyle = '#050505';
+            ctx.fillRect(0, 0, width, height);
 
+            // Draw Stars
+            stars.forEach(s => {
+                ctx.globalAlpha = s.o;
+                ctx.fillStyle = "white";
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.s, 0, Math.PI*2);
+                ctx.fill();
+            });
+
+            ctx.globalAlpha = 1;
+            branches.forEach(b => {
+                b.grow();
+                b.draw();
+            });
+
+            leaves.forEach(l => l.draw());
+
+            requestAnimationFrame(render);
+        }
+
+        startBtn.addEventListener('click', () => {
+            gsap.to(gate, { opacity: 0, duration: 1, onComplete: () => {
+                gate.style.display = 'none';
+                gsap.to("#msg-box", { opacity: 1, y: 0, duration: 1.5 });
+                // Start growing the tree from the bottom center
+                createTree(width/2, height, height/5, 0, 8);
+            }});
         });
 
-
-
-        var seedAnimate = eval(Jscex.compile("async", function () {
-
-            seed.draw();
-
-            while (hold) {
-
-                $await(Jscex.Async.sleep(10));
-
-            }
-
-            while (seed.canScale()) {
-
-                seed.scale(0.95);
-
-                $await(Jscex.Async.sleep(10));
-
-            }
-
-            while (seed.canMove()) {
-
-                seed.move(0, 2);
-
-                foot.draw();
-
-                $await(Jscex.Async.sleep(10));
-
-            }
-
-        }));
-
-
-
-        var growAnimate = eval(Jscex.compile("async", function () {
-
-            do {
-
-                tree.grow();
-
-                $await(Jscex.Async.sleep(10));
-
-            } while (tree.canGrow());
-
-        }));
-
-
-
-        var flowAnimate = eval(Jscex.compile("async", function () {
-
-            do {
-
-                tree.flower(2);
-
-                $await(Jscex.Async.sleep(10));
-
-            } while (tree.canFlower());
-
-        }));
-
-
-
-        var moveAnimate = eval(Jscex.compile("async", function () {
-
-            tree.snapshot("p1", 240, 0, 610, 680);
-
-            while (tree.move("p1", 500, 0)) {
-
-                foot.draw();
-
-                $await(Jscex.Async.sleep(10));
-
-            }
-
-            foot.draw();
-
-            tree.snapshot("p2", 500, 0, 610, 680);
-
-
-
-            canvas.parent().css("background", "url(" + tree.toDataURL('image/png') + ")");
-
-            canvas.css("background", "#ffe");
-
-            $await(Jscex.Async.sleep(300));
-
-            canvas.css("background", "none");
-
-        }));
-
-
-
-        var textAnimate = eval(Jscex.compile("async", function () {
-
-            $("#code").show().typewriter();
-
-        }));
-
-	    
-
-        var runAsync = eval(Jscex.compile("async", function () {
-
-            $await(seedAnimate());
-
-            $await(growAnimate());
-
-            $await(flowAnimate());
-
-            $await(moveAnimate());
-
-            textAnimate().start();
-
-        }));
-
-
-
-        runAsync().start();
-
-    })();
-
+        render();
     </script>
-
 </body>
-
 </html>
