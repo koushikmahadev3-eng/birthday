@@ -3,26 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Happy birthday</title>
+    <title>The Infinite Heart Tree 3D</title>
     <style>
-        body { margin: 0; background: #000; overflow: hidden; font-family: 'serif'; }
+        :root {
+            --heart-red: #ff3366;
+            --gold: #ffd700;
+        }
+
+        body { margin: 0; background: #000; overflow: hidden; font-family: 'Georgia', serif; }
+        
         #ui {
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            top: 15%;
+            width: 100%;
             z-index: 100;
             text-align: center;
             pointer-events: none;
-            transition: opacity 2s;
         }
+
         h1 {
             color: white;
-            font-size: 4rem;
-            text-shadow: 0 0 20px #ff3366;
+            font-size: clamp(2rem, 8vw, 4rem);
+            text-shadow: 0 0 20px var(--heart-red);
             margin: 0;
             opacity: 0;
+            transition: opacity 2s ease;
+            letter-spacing: 5px;
         }
+
+        .inspiring-lines {
+            margin-top: 20px;
+            color: var(--gold);
+            font-style: italic;
+            font-size: clamp(0.9rem, 4vw, 1.3rem);
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+        }
+
+        .line {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 2.5s ease;
+            margin: 15px 0;
+        }
+
+        .line.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
         #gate {
             position: fixed;
             inset: 0;
@@ -33,41 +62,53 @@
             justify-content: center;
             align-items: center;
             cursor: pointer;
+            transition: opacity 1.5s ease;
         }
+
         .heart-loader {
-            width: 50px;
-            height: 50px;
-            background: #ff3366;
+            width: 60px;
+            height: 60px;
+            background: var(--heart-red);
             transform: rotate(-45deg);
-            box-shadow: 0 0 50px #ff3366;
+            box-shadow: 0 0 50px var(--heart-red);
             animation: beat 1s infinite;
         }
+
         .heart-loader::before, .heart-loader::after {
             content: '';
-            width: 50px;
-            height: 50px;
-            background: #ff3366;
+            width: 60px;
+            height: 60px;
+            background: var(--heart-red);
             border-radius: 50%;
             position: absolute;
         }
-        .heart-loader::before { top: -25px; left: 0; }
-        .heart-loader::after { top: 0; left: 25px; }
+
+        .heart-loader::before { top: -30px; left: 0; }
+        .heart-loader::after { top: 0; left: 30px; }
+
         @keyframes beat {
             0%, 100% { transform: rotate(-45deg) scale(1); }
-            50% { transform: rotate(-45deg) scale(1.2); }
+            50% { transform: rotate(-45deg) scale(1.15); }
         }
-        .tap-text { color: white; margin-top: 60px; letter-spacing: 5px; font-size: 0.8rem; }
+
+        .tap-text { color: white; margin-top: 70px; letter-spacing: 5px; font-size: 0.7rem; opacity: 0.6; }
     </style>
 </head>
 <body>
 
     <div id="gate">
         <div class="heart-loader"></div>
-        <div class="tap-text">CLICK TO AWAKEN</div>
+        <div class="tap-text">LUMOS MAXIMA: CLICK TO AWAKEN</div>
     </div>
 
     <div id="ui">
         <h1 id="title">HAPPY BIRTHDAY</h1>
+        <div class="inspiring-lines">
+            <p class="line">A legacy isn't built in a day, but in every heartbeat.</p>
+            <p class="line">Like this tree, may you grow toward the light...</p>
+            <p class="line">...and may your roots hold the wisdom of the ages.</p>
+            <p class="line">The world is brighter because you are in it.</p>
+        </div>
     </div>
 
     <script type="importmap">
@@ -86,48 +127,46 @@
         import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 
         let scene, camera, renderer, composer, clock;
-        let branches = [];
-        
         const gate = document.getElementById('gate');
         const title = document.getElementById('title');
+        const lines = document.querySelectorAll('.line');
 
         function init() {
             scene = new THREE.Scene();
-            scene.fog = new THREE.FogExp2(0x000000, 0.02);
+            scene.fog = new THREE.FogExp2(0x000000, 0.015);
 
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 5, 15);
+            camera.position.set(0, 5, 20);
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             document.body.appendChild(renderer.domElement);
 
-            // Post Processing for that "God Level" Glow
+            // POST PROCESSING (LUMOS MAXIMA GLOW)
             const renderScene = new RenderPass(scene, camera);
             const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
             bloomPass.threshold = 0;
-            bloomPass.strength = 1.2;
-            bloomPass.radius = 1;
+            bloomPass.strength = 1.4; // Max Brightness
+            bloomPass.radius = 1.2;
 
             composer = new EffectComposer(renderer);
             composer.addPass(renderScene);
             composer.addPass(bloomPass);
 
-            // Lighting
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
+            // Lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
             scene.add(ambientLight);
 
-            // Stars Background
-            const starGeometry = new THREE.BufferGeometry();
-            const starMaterial = new THREE.PointsMaterial({ color: 0xffffff });
-            const starVertices = [];
-            for (let i = 0; i < 5000; i++) {
-                starVertices.push(THREE.MathUtils.randFloatSpread(200), THREE.MathUtils.randFloatSpread(200), THREE.MathUtils.randFloatSpread(200));
+            // Starfield
+            const starGeo = new THREE.BufferGeometry();
+            const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.1 });
+            const starPoints = [];
+            for(let i=0; i<6000; i++) {
+                starPoints.push(THREE.MathUtils.randFloatSpread(200), THREE.MathUtils.randFloatSpread(200), THREE.MathUtils.randFloatSpread(200));
             }
-            starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
-            const stars = new THREE.Points(starGeometry, starMaterial);
-            scene.add(stars);
+            starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPoints, 3));
+            scene.add(new THREE.Points(starGeo, starMat));
 
             clock = new THREE.Clock();
             animate();
@@ -135,21 +174,17 @@
 
         function createHeartMesh() {
             const shape = new THREE.Shape();
-            const x = 0, y = 0;
-            shape.moveTo(x + 0.25, y + 0.25);
-            shape.bezierCurveTo(x + 0.25, y + 0.25, x + 0.2, y, x, y);
-            shape.bezierCurveTo(x - 0.3, y, x - 0.3, y + 0.35, x - 0.3, y + 0.35);
-            shape.bezierCurveTo(x - 0.3, y + 0.55, x - 0.1, y + 0.77, x + 0.25, y + 0.95);
-            shape.bezierCurveTo(x + 0.6, y + 0.77, x + 0.8, y + 0.55, x + 0.8, y + 0.35);
-            shape.bezierCurveTo(x + 0.8, y + 0.35, x + 0.8, y, x + 0.5, y);
-            shape.bezierCurveTo(x + 0.35, y, x + 0.25, y + 0.25, x + 0.25, y + 0.25);
+            shape.moveTo(0, 0);
+            shape.bezierCurveTo(0, -0.3, -0.6, -0.3, -0.6, 0);
+            shape.bezierCurveTo(-0.6, 0.3, 0, 0.6, 0, 1);
+            shape.bezierCurveTo(0, 0.6, 0.6, 0.3, 0.6, 0);
+            shape.bezierCurveTo(0.6, -0.3, 0, -0.3, 0, 0);
 
-            const extrudeSettings = { depth: 0.1, bevelEnabled: true, bevelSegments: 2, steps: 2, bevelSize: 0.1, bevelThickness: 0.1 };
-            const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-            const material = new THREE.MeshPhongMaterial({ color: 0xff3366, emissive: 0xff0033 });
+            const geometry = new THREE.ExtrudeGeometry(shape, { depth: 0.1, bevelEnabled: true, bevelSize: 0.05 });
+            const material = new THREE.MeshPhongMaterial({ color: 0xff3366, emissive: 0x550011 });
             const mesh = new THREE.Mesh(geometry, material);
-            mesh.scale.set(0.2, 0.2, 0.2);
-            mesh.rotation.z = Math.PI;
+            mesh.scale.set(0.3, 0.3, 0.3);
+            mesh.rotation.x = Math.PI; // Flip it
             return mesh;
         }
 
@@ -158,25 +193,25 @@
 
             const end = new THREE.Vector3().addVectors(start, direction.clone().multiplyScalar(length));
             
-            // Draw branch using a cylinder
             const curve = new THREE.LineCurve3(start, end);
             const tubeGeo = new THREE.TubeGeometry(curve, 1, thickness, 8, false);
-            const tubeMat = new THREE.MeshPhongMaterial({ color: 0x221111 });
+            const tubeMat = new THREE.MeshStandardMaterial({ color: 0x1a0f0f, roughness: 0.8 });
             const branch = new THREE.Mesh(tubeGeo, tubeMat);
             scene.add(branch);
 
-            if (depth > 4) {
-                const leaf = createHeartMesh();
-                leaf.position.copy(end);
-                leaf.rotation.y = Math.random() * Math.PI;
-                scene.add(leaf);
+            // Add hearts on outer branches
+            if (depth > 3) {
+                const heart = createHeartMesh();
+                heart.position.copy(end);
+                heart.rotation.y = Math.random() * Math.PI;
+                scene.add(heart);
             }
 
-            const numChildren = 2;
-            for (let i = 0; i < numChildren; i++) {
+            const branchesCount = 2;
+            for (let i = 0; i < branchesCount; i++) {
                 const newDir = direction.clone()
-                    .applyAxisAngle(new THREE.Vector3(1, 0, 0), (Math.random() - 0.5) * 1.5)
-                    .applyAxisAngle(new THREE.Vector3(0, 1, 0), (Math.random() - 0.5) * 1.5)
+                    .applyAxisAngle(new THREE.Vector3(1, 0, 0), (Math.random() - 0.5) * 1.8)
+                    .applyAxisAngle(new THREE.Vector3(0, 1, 0), (Math.random() - 0.5) * 1.8)
                     .normalize();
                 
                 setTimeout(() => {
@@ -187,28 +222,39 @@
 
         function animate() {
             requestAnimationFrame(animate);
-            const delta = clock.getElapsedTime();
-            
-            // Gentle camera motion
-            camera.position.x = Math.sin(delta * 0.3) * 10;
-            camera.position.z = Math.cos(delta * 0.3) * 15;
+            const elapsed = clock.getElapsedTime();
+            camera.position.x = Math.sin(elapsed * 0.2) * 12;
+            camera.position.z = Math.cos(elapsed * 0.2) * 18;
             camera.lookAt(0, 5, 0);
-
             composer.render();
         }
 
         gate.addEventListener('click', () => {
             gate.style.opacity = '0';
+            
+            // Full Music Implementation
+            const music = new Audio('https://codeskulptor-demos.commondatastorage.googleapis.com/descent/background%20music.mp3');
+            music.loop = true;
+            music.volume = 0.6;
+            music.play();
+
             setTimeout(() => {
                 gate.style.display = 'none';
                 title.style.opacity = '1';
-                // Audio - Using a generic cinematic swell source
-                const audio = new Audio('https://codeskulptor-demos.commondatastorage.googleapis.com/descent/background%20music.mp3');
-                audio.volume = 0.5;
-                audio.play();
+                growTree(new THREE.Vector3(0, -5, 0), new THREE.Vector3(0, 1, 0), 5, 0.4, 0);
                 
-                growTree(new THREE.Vector3(0, -5, 0), new THREE.Vector3(0, 1, 0), 4, 0.3, 0);
+                // Animate Text Lines
+                lines.forEach((line, i) => {
+                    setTimeout(() => line.classList.add('visible'), 3000 + (i * 2500));
+                });
             }, 1000);
+        });
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            composer.setSize(window.innerWidth, window.innerHeight);
         });
 
         init();
