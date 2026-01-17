@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Happy Birthday - Interdimensional Celebration</title>
+    <title>Birthday Celebration - Enter the Digital Realm</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -20,6 +21,128 @@
             color: #fff;
             overflow-x: hidden;
             cursor: none;
+        }
+        
+        /* Entry Screen Styles */
+        .entry-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: radial-gradient(circle at center, #1a0033, #000);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            transition: opacity 1s ease, transform 1s ease;
+        }
+        
+        .entry-screen.hidden {
+            opacity: 0;
+            transform: scale(1.5);
+            pointer-events: none;
+        }
+        
+        .entry-logo {
+            font-size: clamp(40px, 8vw, 100px);
+            background: linear-gradient(45deg, #ff00ff, #00ffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 40px;
+            text-shadow: 0 0 50px rgba(255, 0, 255, 0.5);
+            animation: pulseGlow 2s infinite;
+        }
+        
+        @keyframes pulseGlow {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.5); }
+        }
+        
+        .input-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .name-input {
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #0ff;
+            color: #fff;
+            padding: 15px 30px;
+            font-size: clamp(16px, 3vw, 24px);
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            border-radius: 10px;
+            outline: none;
+            min-width: 300px;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .name-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .name-input:focus {
+            box-shadow: 0 0 50px rgba(0, 255, 255, 0.6);
+            transform: scale(1.05);
+        }
+        
+        .enter-button {
+            background: linear-gradient(45deg, #ff00ff, #00ffff);
+            border: none;
+            color: #000;
+            padding: 20px 60px;
+            font-size: clamp(18px, 3vw, 28px);
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 50px;
+            box-shadow: 0 0 40px rgba(255, 0, 255, 0.5);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+        
+        .enter-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 60px rgba(255, 0, 255, 0.8);
+        }
+        
+        .enter-button:active {
+            transform: scale(0.95);
+        }
+        
+        .entry-subtitle {
+            color: #0ff;
+            font-size: clamp(14px, 2vw, 20px);
+            text-shadow: 0 0 20px #0ff;
+            animation: blink 1.5s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50%, 100% { opacity: 1; }
+            25%, 75% { opacity: 0.5; }
+        }
+        
+        /* Main Experience Styles */
+        .main-experience {
+            display: none;
+            opacity: 0;
+        }
+        
+        .main-experience.active {
+            display: block;
+            animation: fadeIn 1s forwards 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            to { opacity: 1; }
         }
         
         #canvas-container {
@@ -177,6 +300,28 @@
             border-radius: 5px;
         }
         
+        .music-control {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+            background: rgba(0, 255, 255, 0.2);
+            border: 2px solid #0ff;
+            color: #0ff;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .music-control:hover {
+            background: rgba(0, 255, 255, 0.4);
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.6);
+        }
+        
         .scroll-indicator {
             position: fixed;
             bottom: 40px;
@@ -271,405 +416,364 @@
             0% { background-position: 0 0; }
             100% { background-position: 0 100%; }
         }
+        
+        .name-highlight {
+            color: #ff00ff;
+            text-shadow: 0 0 20px #ff00ff;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
-    <div id="custom-cursor"></div>
-    <div class="pixel-grid"></div>
-    
-    <div class="stats">
-        <div>FPS: <span id="fps">60</span></div>
-        <div>PARTICLES: <span id="particle-count">0</span></div>
-        <div>SCROLL: <span id="scroll-progress">0</span>%</div>
+    <!-- Entry Screen -->
+    <div class="entry-screen" id="entryScreen">
+        <h1 class="entry-logo">🎂 BIRTHDAY PORTAL 🎂</h1>
+        <div class="input-container">
+            <input type="text" class="name-input" id="nameInput" placeholder="Enter Your Name" maxlength="20">
+            <button class="enter-button" id="enterButton" onclick="enterExperience()">TAP TO ENTER</button>
+        </div>
+        <p class="entry-subtitle">>>> PREPARE FOR THE ULTIMATE CELEBRATION <<<</p>
     </div>
-    
-    <div class="data-stream" id="data-stream"></div>
-    
-    <div id="canvas-container"></div>
-    
-    <div class="scroll-content">
-        <div class="section hero">
-            <h1 class="title glitch">HAPPY BIRTHDAY</h1>
-            <p class="subtitle">INITIATING CELEBRATION PROTOCOL</p>
+
+    <!-- Main Experience -->
+    <div class="main-experience" id="mainExperience">
+        <div id="custom-cursor"></div>
+        <div class="pixel-grid"></div>
+        
+        <div class="stats">
+            <div>FPS: <span id="fps">60</span></div>
+            <div>PARTICLES: <span id="particle-count">0</span></div>
+            <div>SCROLL: <span id="scroll-progress">0</span>%</div>
         </div>
         
-        <div class="section">
-            <div class="message-box hologram">
-                <h2>The Journey Begins</h2>
-                <p>Today marks another revolution around our star, another year of evolution, growth, and infinite possibilities. You are the architect of digital dreams, the conductor of electronic symphonies.</p>
+        <div class="music-control" id="musicControl">🔊 MUSIC: ON</div>
+        
+        <div class="data-stream" id="data-stream"></div>
+        
+        <div id="canvas-container"></div>
+        
+        <div class="scroll-content">
+            <div class="section hero">
+                <h1 class="title glitch">HAPPY BIRTHDAY<br><span id="heroName"></span></h1>
+                <p class="subtitle">INITIATING CELEBRATION PROTOCOL</p>
+            </div>
+            
+            <div class="section">
+                <div class="message-box hologram">
+                    <h2>Welcome, <span class="name-highlight" id="name1"></span></h2>
+                    <p>Today marks another revolution around our star, another year of evolution, growth, and infinite possibilities. You are the architect of digital dreams, the conductor of electronic symphonies, <span class="name-highlight" id="name2"></span>.</p>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="message-box hologram">
+                    <h2>Infinite Potential</h2>
+                    <p>Like particles in this quantum field, your energy radiates across dimensions, <span class="name-highlight" id="name3"></span>. Each moment is a new vertex in the geometry of your existence, each decision a transformation in the matrix of reality.</p>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="message-box hologram">
+                    <h2>Code of Excellence</h2>
+                    <p><span class="name-highlight" id="name4"></span>, you don't just write code—you compose algorithms of inspiration. You don't just solve problems—you redefine what's possible. The universe itself compiles your dreams into reality.</p>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="message-box hologram">
+                    <h2>Celebration Sequence</h2>
+                    <p>As we traverse this digital tapestry, know that you are celebrated not just today, but in every moment, <span class="name-highlight" id="name5"></span>. Your impact ripples through time and space, creating waves of positive change.</p>
+                </div>
+            </div>
+            
+            <div class="section finale">
+                <div class="wish-container">
+                    <h1>🎂 MAKE A WISH 🎂</h1>
+                    <p style="font-size: clamp(18px, 3vw, 36px); color: #fff; text-shadow: 0 0 20px #fff; margin-top: 30px;">
+                        <span class="name-highlight" id="name6"></span>, may this year bring you limitless joy, boundless creativity, and infinite success!
+                    </p>
+                </div>
             </div>
         </div>
         
-        <div class="section">
-            <div class="message-box hologram">
-                <h2>Infinite Potential</h2>
-                <p>Like particles in this quantum field, your energy radiates across dimensions. Each moment is a new vertex in the geometry of your existence, each decision a transformation in the matrix of reality.</p>
-            </div>
-        </div>
-        
-        <div class="section">
-            <div class="message-box hologram">
-                <h2>Code of Excellence</h2>
-                <p>You don't just write code—you compose algorithms of inspiration. You don't just solve problems—you redefine what's possible. The universe itself compiles your dreams into reality.</p>
-            </div>
-        </div>
-        
-        <div class="section">
-            <div class="message-box hologram">
-                <h2>Celebration Sequence</h2>
-                <p>As we traverse this digital tapestry, know that you are celebrated not just today, but in every moment. Your impact ripples through time and space, creating waves of positive change.</p>
-            </div>
-        </div>
-        
-        <div class="section finale">
-            <div class="wish-container">
-                <h1>🎂 MAKE A WISH 🎂</h1>
-                <p style="font-size: clamp(18px, 3vw, 36px); color: #fff; text-shadow: 0 0 20px #fff; margin-top: 30px;">
-                    May this year bring you limitless joy, boundless creativity, and infinite success!
-                </p>
-            </div>
-        </div>
+        <div class="scroll-indicator">↓ SCROLL TO EXPLORE ↓</div>
     </div>
-    
-    <div class="scroll-indicator">↓ SCROLL TO EXPLORE ↓</div>
 
     <script>
-        // GSAP ScrollTrigger Registration
-        gsap.registerPlugin(ScrollTrigger);
+        // Entry Screen Logic
+        let userName = '';
+        const entryScreen = document.getElementById('entryScreen');
+        const mainExperience = document.getElementById('mainExperience');
+        const nameInput = document.getElementById('nameInput');
         
-        // Custom Cursor
-        const cursor = document.getElementById('custom-cursor');
-        let mouseX = 0, mouseY = 0;
-        let cursorX = 0, cursorY = 0;
+        function enterExperience() {
+            userName = nameInput.value.trim() || 'Friend';
+            
+            // Update all name placeholders
+            document.getElementById('heroName').textContent = userName.toUpperCase();
+            document.querySelectorAll('[id^="name"]').forEach(el => {
+                el.textContent = userName;
+            });
+            
+            // Transition to main experience
+            entryScreen.classList.add('hidden');
+            setTimeout(() => {
+                entryScreen.style.display = 'none';
+                mainExperience.classList.add('active');
+                initMainExperience();
+            }, 1000);
+        }
         
-        document.addEventListener('mousemove', (e) => {
-            mouseX = e.clientX;
-            mouseY = e.clientY;
+        nameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') enterExperience();
         });
         
-        function updateCursor() {
-            cursorX += (mouseX - cursorX) * 0.1;
-            cursorY += (mouseY - cursorY) * 0.1;
-            cursor.style.left = cursorX + 'px';
-            cursor.style.top = cursorY + 'px';
-            requestAnimationFrame(updateCursor);
-        }
-        updateCursor();
+        // Auto-focus on name input
+        nameInput.focus();
         
-        // Data Stream Effect
-        const dataStream = document.getElementById('data-stream');
-        const chars = '01';
-        function generateDataStream() {
-            let stream = '';
-            for(let i = 0; i < 50; i++) {
-                stream += chars[Math.floor(Math.random() * chars.length)] + '\n';
+        // Main Experience Initialization
+        function initMainExperience() {
+            // GSAP ScrollTrigger Registration
+            gsap.registerPlugin(ScrollTrigger);
+            
+            // Custom Cursor
+            const cursor = document.getElementById('custom-cursor');
+            let mouseX = 0, mouseY = 0;
+            let cursorX = 0, cursorY = 0;
+            
+            document.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+            });
+            
+            function updateCursor() {
+                cursorX += (mouseX - cursorX) * 0.1;
+                cursorY += (mouseY - cursorY) * 0.1;
+                cursor.style.left = cursorX + 'px';
+                cursor.style.top = cursorY + 'px';
+                requestAnimationFrame(updateCursor);
             }
-            dataStream.textContent = stream;
-        }
-        setInterval(generateDataStream, 100);
-        
-        // Three.js Setup
-        const container = document.getElementById('canvas-container');
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-        
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        container.appendChild(renderer.domElement);
-        
-        camera.position.z = 5;
-        
-        // Particle System Configuration
-        const particleCount = 15000;
-        const positions = new Float32Array(particleCount * 3);
-        const velocities = new Float32Array(particleCount * 3);
-        const colors = new Float32Array(particleCount * 3);
-        const sizes = new Float32Array(particleCount);
-        
-        for(let i = 0; i < particleCount; i++) {
-            const i3 = i * 3;
-            positions[i3] = (Math.random() - 0.5) * 20;
-            positions[i3 + 1] = (Math.random() - 0.5) * 20;
-            positions[i3 + 2] = (Math.random() - 0.5) * 20;
+            updateCursor();
             
-            velocities[i3] = (Math.random() - 0.5) * 0.02;
-            velocities[i3 + 1] = (Math.random() - 0.5) * 0.02;
-            velocities[i3 + 2] = (Math.random() - 0.5) * 0.02;
+            // Music System with Tone.js
+            let musicPlaying = false;
+            let synth, bassLine, melody;
             
-            colors[i3] = Math.random();
-            colors[i3 + 1] = Math.random() * 0.5 + 0.5;
-            colors[i3 + 2] = 1;
-            
-            sizes[i] = Math.random() * 3 + 1;
-        }
-        
-        const geometry = new THREE.BufferGeometry();
-        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-        geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-        
-        const material = new THREE.ShaderMaterial({
-            uniforms: {
-                time: { value: 0 },
-                mousePos: { value: new THREE.Vector2(0, 0) },
-                scrollProgress: { value: 0 }
-            },
-            vertexShader: `
-                attribute float size;
-                attribute vec3 color;
-                varying vec3 vColor;
-                uniform float time;
-                uniform vec2 mousePos;
-                uniform float scrollProgress;
+            async function initMusic() {
+                await Tone.start();
                 
-                void main() {
-                    vColor = color;
-                    vec3 pos = position;
-                    
-                    // Wave effect
-                    float wave = sin(pos.x * 0.5 + time) * cos(pos.y * 0.5 + time) * 0.3;
-                    pos.z += wave;
-                    
-                    // Spiral based on scroll
-                    float angle = scrollProgress * 10.0 + length(pos.xy) * 0.5;
-                    float radius = length(pos.xy);
-                    pos.x = cos(angle) * radius;
-                    pos.y = sin(angle) * radius;
-                    
-                    // Mouse interaction
-                    vec2 mouseOffset = (mousePos - vec2(pos.xy)) * 0.1;
-                    float dist = length(mouseOffset);
-                    if(dist < 2.0) {
-                        pos.xy -= mouseOffset * (2.0 - dist) * 0.5;
+                // Create synthwave-style instruments
+                synth = new Tone.PolySynth(Tone.FMSynth, {
+                    harmonicity: 3,
+                    modulationIndex: 10,
+                    envelope: {
+                        attack: 0.01,
+                        decay: 0.5,
+                        sustain: 0.3,
+                        release: 1
                     }
-                    
-                    vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-                    gl_PointSize = size * (300.0 / -mvPosition.z);
-                    gl_Position = projectionMatrix * mvPosition;
-                }
-            `,
-            fragmentShader: `
-                varying vec3 vColor;
-                uniform float time;
+                }).toDestination();
                 
-                void main() {
-                    vec2 center = gl_PointCoord - vec2(0.5);
-                    float dist = length(center);
-                    
-                    if(dist > 0.5) discard;
-                    
-                    float alpha = 1.0 - (dist * 2.0);
-                    alpha *= (sin(time * 2.0) * 0.3 + 0.7);
-                    
-                    vec3 finalColor = vColor;
-                    finalColor += vec3(sin(time), cos(time), sin(time * 0.5)) * 0.2;
-                    
-                    gl_FragColor = vec4(finalColor, alpha);
-                }
-            `,
-            transparent: true,
-            blending: THREE.AdditiveBlending,
-            depthWrite: false,
-            vertexColors: true
-        });
-        
-        const particles = new THREE.Points(geometry, material);
-        scene.add(particles);
-        
-        // Geometric Shapes
-        const torusGeometry = new THREE.TorusGeometry(2, 0.3, 16, 100);
-        const torusMaterial = new THREE.MeshBasicMaterial({ 
-            color: 0x00ffff, 
-            wireframe: true,
-            transparent: true,
-            opacity: 0.3
-        });
-        const torus = new THREE.Mesh(torusGeometry, torusMaterial);
-        scene.add(torus);
-        
-        const sphereGeometry = new THREE.SphereGeometry(1.5, 32, 32);
-        const sphereMaterial = new THREE.MeshBasicMaterial({
-            color: 0xff00ff,
-            wireframe: true,
-            transparent: true,
-            opacity: 0.2
-        });
-        const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-        scene.add(sphere);
-        
-        // Animation Variables
-        let time = 0;
-        let scrollProgress = 0;
-        const mousePosition = new THREE.Vector2(0, 0);
-        
-        // Mouse tracking for 3D interaction
-        document.addEventListener('mousemove', (e) => {
-            mousePosition.x = (e.clientX / window.innerWidth) * 2 - 1;
-            mousePosition.y = -(e.clientY / window.innerHeight) * 2 + 1;
-        });
-        
-        // FPS Counter
-        let lastTime = performance.now();
-        let frames = 0;
-        let fps = 60;
-        
-        // Animation Loop
-        function animate() {
-            requestAnimationFrame(animate);
-            time += 0.016;
-            
-            // Update FPS
-            frames++;
-            const currentTime = performance.now();
-            if(currentTime >= lastTime + 1000) {
-                fps = Math.round((frames * 1000) / (currentTime - lastTime));
-                document.getElementById('fps').textContent = fps;
-                frames = 0;
-                lastTime = currentTime;
+                bassLine = new Tone.MonoSynth({
+                    oscillator: { type: 'sawtooth' },
+                    envelope: {
+                        attack: 0.05,
+                        decay: 0.3,
+                        sustain: 0.4,
+                        release: 0.8
+                    },
+                    filter: {
+                        Q: 2,
+                        type: 'lowpass',
+                        rolloff: -24
+                    }
+                }).toDestination();
+                
+                melody = new Tone.Synth({
+                    oscillator: { type: 'triangle' },
+                    envelope: {
+                        attack: 0.02,
+                        decay: 0.1,
+                        sustain: 0.3,
+                        release: 1
+                    }
+                }).toDestination();
+                
+                // Set volumes
+                synth.volume.value = -12;
+                bassLine.volume.value = -15;
+                melody.volume.value = -18;
+                
+                // Create musical sequences
+                const chordProgression = new Tone.Sequence((time, chord) => {
+                    synth.triggerAttackRelease(chord, '2n', time);
+                }, [
+                    ['C4', 'E4', 'G4'],
+                    ['A3', 'C4', 'E4'],
+                    ['F3', 'A3', 'C4'],
+                    ['G3', 'B3', 'D4']
+                ], '2n').start(0);
+                
+                const bass = new Tone.Sequence((time, note) => {
+                    bassLine.triggerAttackRelease(note, '4n', time);
+                }, ['C2', 'A1', 'F1', 'G1'], '2n').start(0);
+                
+                const melodyLine = new Tone.Sequence((time, note) => {
+                    if (note) {
+                        melody.triggerAttackRelease(note, '8n', time);
+                    }
+                }, [
+                    'C5', null, 'E5', 'G5',
+                    'A5', null, 'G5', 'E5',
+                    'F5', null, 'A5', 'C6',
+                    'B5', null, 'G5', 'D5'
+                ], '8n').start(0);
+                
+                Tone.Transport.bpm.value = 120;
+                Tone.Transport.start();
+                musicPlaying = true;
             }
             
-            // Update scroll progress
-            scrollProgress = window.scrollY / (document.body.scrollHeight - window.innerHeight);
-            document.getElementById('scroll-progress').textContent = Math.round(scrollProgress * 100);
+            const musicControl = document.getElementById('musicControl');
+            musicControl.addEventListener('click', async () => {
+                if (!musicPlaying) {
+                    await initMusic();
+                    musicControl.textContent = '🔊 MUSIC: ON';
+                } else {
+                    Tone.Transport.stop();
+                    musicPlaying = false;
+                    musicControl.textContent = '🔇 MUSIC: OFF';
+                }
+            });
             
-            // Update shader uniforms
-            material.uniforms.time.value = time;
-            material.uniforms.mousePos.value.copy(mousePosition);
-            material.uniforms.scrollProgress.value = scrollProgress;
+            // Auto-start music
+            setTimeout(async () => {
+                await initMusic();
+            }, 1000);
             
-            // Particle animation
-            const posArray = geometry.attributes.position.array;
+            // Data Stream Effect
+            const dataStream = document.getElementById('data-stream');
+            const chars = '01';
+            function generateDataStream() {
+                let stream = '';
+                for(let i = 0; i < 50; i++) {
+                    stream += chars[Math.floor(Math.random() * chars.length)] + '\n';
+                }
+                dataStream.textContent = stream;
+            }
+            setInterval(generateDataStream, 100);
+            
+            // Three.js Setup
+            const container = document.getElementById('canvas-container');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+            
+            camera.position.z = 5;
+            
+            // Particle System Configuration
+            const particleCount = 15000;
+            const positions = new Float32Array(particleCount * 3);
+            const velocities = new Float32Array(particleCount * 3);
+            const colors = new Float32Array(particleCount * 3);
+            const sizes = new Float32Array(particleCount);
+            
             for(let i = 0; i < particleCount; i++) {
                 const i3 = i * 3;
-                posArray[i3] += velocities[i3];
-                posArray[i3 + 1] += velocities[i3 + 1];
-                posArray[i3 + 2] += velocities[i3 + 2];
+                positions[i3] = (Math.random() - 0.5) * 20;
+                positions[i3 + 1] = (Math.random() - 0.5) * 20;
+                positions[i3 + 2] = (Math.random() - 0.5) * 20;
                 
-                // Boundary check
-                if(Math.abs(posArray[i3]) > 10) velocities[i3] *= -1;
-                if(Math.abs(posArray[i3 + 1]) > 10) velocities[i3 + 1] *= -1;
-                if(Math.abs(posArray[i3 + 2]) > 10) velocities[i3 + 2] *= -1;
+                velocities[i3] = (Math.random() - 0.5) * 0.02;
+                velocities[i3 + 1] = (Math.random() - 0.5) * 0.02;
+                velocities[i3 + 2] = (Math.random() - 0.5) * 0.02;
+                
+                colors[i3] = Math.random();
+                colors[i3 + 1] = Math.random() * 0.5 + 0.5;
+                colors[i3 + 2] = 1;
+                
+                sizes[i] = Math.random() * 3 + 1;
             }
-            geometry.attributes.position.needsUpdate = true;
             
-            // Rotate geometric shapes
-            torus.rotation.x = time * 0.3 + scrollProgress * Math.PI * 2;
-            torus.rotation.y = time * 0.2;
-            torus.position.x = Math.sin(time * 0.5) * 3;
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
             
-            sphere.rotation.y = -time * 0.4;
-            sphere.rotation.z = time * 0.3 + scrollProgress * Math.PI;
-            sphere.position.y = Math.cos(time * 0.3) * 2;
-            
-            // Camera movement
-            camera.position.x = mousePosition.x * 2;
-            camera.position.y = mousePosition.y * 2;
-            camera.lookAt(scene.position);
-            
-            // Particle count display
-            document.getElementById('particle-count').textContent = particleCount.toLocaleString();
-            
-            renderer.render(scene, camera);
-        }
-        
-        animate();
-        
-        // GSAP Scroll Animations
-        gsap.to('.subtitle', {
-            opacity: 1,
-            y: 0,
-            duration: 1,
-            delay: 0.5,
-            ease: 'power3.out'
-        });
-        
-        gsap.utils.toArray('.message-box').forEach((box, i) => {
-            gsap.fromTo(box, 
-                {
-                    opacity: 0,
-                    y: 100,
-                    rotateX: -15
+            const material = new THREE.ShaderMaterial({
+                uniforms: {
+                    time: { value: 0 },
+                    mousePos: { value: new THREE.Vector2(0, 0) },
+                    scrollProgress: { value: 0 }
                 },
-                {
-                    opacity: 1,
-                    y: 0,
-                    rotateX: 0,
-                    duration: 1,
-                    ease: 'power3.out',
-                    scrollTrigger: {
-                        trigger: box,
-                        start: 'top 80%',
-                        end: 'top 20%',
-                        toggleActions: 'play none none reverse'
+                vertexShader: `
+                    attribute float size;
+                    attribute vec3 color;
+                    varying vec3 vColor;
+                    uniform float time;
+                    uniform vec2 mousePos;
+                    uniform float scrollProgress;
+                    
+                    void main() {
+                        vColor = color;
+                        vec3 pos = position;
+                        
+                        float wave = sin(pos.x * 0.5 + time) * cos(pos.y * 0.5 + time) * 0.3;
+                        pos.z += wave;
+                        
+                        float angle = scrollProgress * 10.0 + length(pos.xy) * 0.5;
+                        float radius = length(pos.xy);
+                        pos.x = cos(angle) * radius;
+                        pos.y = sin(angle) * radius;
+                        
+                        vec2 mouseOffset = (mousePos - vec2(pos.xy)) * 0.1;
+                        float dist = length(mouseOffset);
+                        if(dist < 2.0) {
+                            pos.xy -= mouseOffset * (2.0 - dist) * 0.5;
+                        }
+                        
+                        vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+                        gl_PointSize = size * (300.0 / -mvPosition.z);
+                        gl_Position = projectionMatrix * mvPosition;
                     }
-                }
-            );
-        });
-        
-        gsap.to('.wish-container', {
-            opacity: 1,
-            scale: 1,
-            duration: 2,
-            ease: 'elastic.out(1, 0.5)',
-            scrollTrigger: {
-                trigger: '.finale',
-                start: 'top 50%',
-                end: 'bottom bottom',
-                toggleActions: 'play none none reverse'
-            }
-        });
-        
-        gsap.to('.scroll-indicator', {
-            opacity: 0,
-            scrollTrigger: {
-                start: 'top top',
-                end: '100px top',
-                scrub: true
-            }
-        });
-        
-        // Title morphing animation
-        const title = document.querySelector('.title');
-        gsap.to(title, {
-            scale: 1.2,
-            duration: 2,
-            ease: 'sine.inOut',
-            yoyo: true,
-            repeat: -1
-        });
-        
-        // Create sparkles
-        function createSparkle() {
-            const sparkle = document.createElement('div');
-            sparkle.className = 'sparkle';
-            sparkle.style.left = Math.random() * window.innerWidth + 'px';
-            sparkle.style.top = Math.random() * window.innerHeight + 'px';
-            document.body.appendChild(sparkle);
+                `,
+                fragmentShader: `
+                    varying vec3 vColor;
+                    uniform float time;
+                    
+                    void main() {
+                        vec2 center = gl_PointCoord - vec2(0.5);
+                        float dist = length(center);
+                        
+                        if(dist > 0.5) discard;
+                        
+                        float alpha = 1.0 - (dist * 2.0);
+                        alpha *= (sin(time * 2.0) * 0.3 + 0.7);
+                        
+                        vec3 finalColor = vColor;
+                        finalColor += vec3(sin(time), cos(time), sin(time * 0.5)) * 0.2;
+                        
+                        gl_FragColor = vec4(finalColor, alpha);
+                    }
+                `,
+                transparent: true,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+                vertexColors: true
+            });
             
-            setTimeout(() => sparkle.remove(), 2000);
-        }
-        
-        setInterval(createSparkle, 300);
-        
-        // Window resize handler
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-        
-        // Parallax effect on scroll
-        window.addEventListener('scroll', () => {
-            const scrolled = window.scrollY;
-            particles.rotation.y = scrolled * 0.001;
-            particles.rotation.x = scrolled * 0.0005;
-        });
-        
-        console.log('%c🎉 BIRTHDAY CELEBRATION INITIALIZED 🎉', 'color: #0ff; font-size: 20px; font-weight: bold;');
-        console.log('%cGPGPU Particles: ACTIVE', 'color: #0f0;');
-        console.log('%c3D Graphics: RENDERING', 'color: #f0f;');
-        console.log('%cScroll Animations: LOADED', 'color: #ff0;');
-    </script>
-</body>
-</html>
+            const particles = new THREE.Points(geometry, material);
+            scene.add(particles);
+            
+            // Geometric Shapes
+            const torusGeometry = new THREE.TorusGeometry(2, 0.3, 16, 100);
+            const torusMaterial = new THREE.MeshBasicMaterial({ 
+                color: 0x00ffff, 
+                wireframe: true,
+                transparent: true,
+                opacity: 0.3
+            });
