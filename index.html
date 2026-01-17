@@ -1,309 +1,194 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Happy Birthday | Cinematic Experience</title>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&family=Cinzel+Decorative:wght@700&display=swap"
-        rel="stylesheet">
-
+    <title>The Heart Tree | Infinity</title>
     <style>
-        :root {
-            --glass-bg: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --neon-gold: #ffd700;
-            --neon-blue: #00f3ff;
-            --primary-font: 'Outfit', sans-serif;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: #050505; 
+            overflow: hidden; 
+            font-family: 'Arial', sans-serif;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background-color: #050505;
-            color: #fff;
-            font-family: var(--primary-font);
-            overflow: hidden;
-            /* Locked for intro */
-            height: 100vh;
-            width: 100vw;
-        }
-
-        /* The background engine */
-        #cinematic-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            pointer-events: none;
-        }
-
-        #ui-layer {
-            position: relative;
-            z-index: 2;
-            height: 100vh;
-            overflow-y: auto;
-            overflow-x: hidden;
-            display: none;
-            opacity: 0;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        /* Intro Screen */
-        #intro-screen {
+        canvas { display: block; }
+        
+        #overlay {
             position: fixed;
             inset: 0;
-            z-index: 100;
             display: flex;
             justify-content: center;
             align-items: center;
-            background: radial-gradient(circle, rgba(10, 10, 25, 1) 0%, rgba(5, 5, 5, 1) 100%);
+            z-index: 10;
+            background: rgba(0,0,0,0.9);
+            transition: opacity 1.5s ease;
         }
 
-        .nebula-btn {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, var(--neon-blue), #000);
-            box-shadow: 0 0 30px var(--neon-blue);
-            border: none;
+        .btn-glow {
+            padding: 20px 40px;
+            background: none;
+            border: 2px solid #ff3366;
+            color: #ff3366;
+            font-size: 1.2rem;
+            letter-spacing: 5px;
             cursor: pointer;
-            animation: pulse-nebula 2s infinite ease-in-out;
+            border-radius: 50px;
+            box-shadow: 0 0 20px rgba(255, 51, 102, 0.4);
+            transition: 0.4s;
+        }
+
+        .btn-glow:hover {
+            background: #ff3366;
+            color: #fff;
+            box-shadow: 0 0 50px #ff3366;
+        }
+
+        #message-box {
+            position: fixed;
+            top: 20%;
+            width: 100%;
+            text-align: center;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .wish {
+            position: absolute;
+            width: 100%;
             color: white;
-            font-weight: bold;
-            letter-spacing: 1px;
-            font-size: 0.8rem;
-        }
-
-        @keyframes pulse-nebula {
-
-            0%,
-            100% {
-                transform: scale(1);
-                box-shadow: 0 0 20px var(--neon-blue);
-            }
-
-            50% {
-                transform: scale(1.1);
-                box-shadow: 0 0 50px var(--neon-blue);
-            }
-        }
-
-        /* Layout Content */
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 40px 20px;
-        }
-
-        h1.title {
-            font-family: 'Cinzel Decorative', cursive;
-            font-size: clamp(2.5rem, 8vw, 4rem);
-            text-align: center;
-            background: linear-gradient(90deg, #fff, var(--neon-gold), #fff);
-            background-size: 200%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: shimmer 5s linear infinite;
-        }
-
-        @keyframes shimmer {
-            to {
-                background-position: 200% center;
-            }
-        }
-
-        .glass-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            padding: 30px;
-            margin: 40px 0;
-            text-align: center;
-        }
-
-        .bento-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-        }
-
-        .bento-item {
-            height: 150px;
-            background: var(--glass-bg);
-            border-radius: 15px;
-            border: 1px solid var(--glass-border);
-            display: flex;
-            align-items: flex-end;
-            padding: 15px;
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 0.7rem;
-            letter-spacing: 2px;
-            background-size: cover;
-            background-position: center;
-        }
-
-        /* Dynamic Colors for Grid */
-        .photo-1 {
-            background-image: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent), url('https://picsum.photos/400/300?sig=1');
-        }
-
-        .photo-2 {
-            background-image: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent), url('https://picsum.photos/400/300?sig=2');
-        }
-
-        .photo-3 {
-            background-image: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent), url('https://picsum.photos/400/300?sig=3');
-        }
-
-        .photo-4 {
-            background-image: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent), url('https://picsum.photos/400/300?sig=4');
-        }
-
-        @media (max-width: 480px) {
-            .bento-grid {
-                grid-template-columns: 1fr;
-            }
+            font-size: 2.5rem;
+            font-family: 'Georgia', serif;
+            text-shadow: 0 0 20px rgba(255,255,255,0.8);
+            opacity: 0;
+            transform: translateY(30px);
         }
     </style>
 </head>
-
 <body>
 
-    <canvas id="cinematic-canvas"></canvas>
-
-    <div id="intro-screen">
-        <button class="nebula-btn" id="start-btn">TAP ME</button>
+    <div id="overlay">
+        <button class="btn-glow" id="startBtn">GIVE LIFE</button>
     </div>
 
-    <div id="ui-layer">
-        <div class="container">
-            <header>
-                <h1 class="title">Happy Birthday!</h1>
-                <p style="text-align:center; opacity:0.7; margin-top:10px;">A Cinematic Galaxy for You</p>
-            </header>
-
-            <div class="glass-card">
-                <h2 style="color: var(--neon-gold); margin-bottom:15px;">✨ You are Cosmic ✨</h2>
-                <p>May your year be as boundless as the universe and as bright as the stars. Move your phone to shift
-                    the galaxy.</p>
-            </div>
-
-            <div class="bento-grid">
-                <div class="bento-item photo-1">Joy</div>
-                <div class="bento-item photo-2">Adventure</div>
-                <div class="bento-item photo-3">Magic</div>
-                <div class="bento-item photo-4">Love</div>
-            </div>
-
-            <footer style="margin-top: 60px; text-align: center; opacity: 0.4; font-size: 0.7rem;">
-                TILT PHONE TO DISCOVER • SCROLL TO EXPLORE
-            </footer>
-        </div>
+    <div id="message-box">
+        <div class="wish">Happy Birthday</div>
+        <div class="wish">To a Special Soul</div>
+        <div class="wish">Keep Shining</div>
+        <div class="wish">Like the Stars</div>
     </div>
 
+    <canvas id="canvas"></canvas>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script>
-        const canvas = document.getElementById('cinematic-canvas');
+        const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
-        const startBtn = document.getElementById('start-btn');
-        const intro = document.getElementById('intro-screen');
-        const ui = document.getElementById('ui-layer');
+        let width, height;
+        let particles = [];
+        let treeGrown = false;
 
-        let width, height, stars = [], particles = [];
-        let tilt = { x: 0, y: 0 };
-
-        function init() {
+        function resize() {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
-            stars = [];
-            for (let i = 0; i < 100; i++) {
-                stars.push({
-                    x: Math.random() * width,
-                    y: Math.random() * height,
-                    z: Math.random() * 2,
-                    o: Math.random()
-                });
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // 1. STAR SYSTEM
+        class Star {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.size = Math.random() * 1.5;
+                this.blink = Math.random() * 0.02;
+                this.a = Math.random();
+            }
+            draw() {
+                this.a += this.blink;
+                if(this.a > 1 || this.a < 0) this.blink *= -1;
+                ctx.globalAlpha = this.a;
+                ctx.fillStyle = "white";
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
+                ctx.fill();
             }
         }
+        const stars = Array.from({length: 200}, () => new Star());
 
-        window.addEventListener('resize', init);
-        init();
-
-        // Mobile Tilt Logic
-        if (window.DeviceOrientationEvent) {
-            window.addEventListener('deviceorientation', (e) => {
-                tilt.x = e.gamma / 20;
-                tilt.y = e.beta / 20;
-            });
+        // 2. THE GOD-LEVEL HEART TREE (Recursive)
+        function drawHeart(x, y, size, color) {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.bezierCurveTo(x, y - size/2, x - size, y - size/2, x - size, y);
+            ctx.bezierCurveTo(x - size, y + size/2, x, y + size, x, y + size);
+            ctx.bezierCurveTo(x, y + size, x + size, y + size/2, x + size, y);
+            ctx.bezierCurveTo(x + size, y - size/2, x, y - size/2, x, y);
+            ctx.fill();
         }
 
-        function draw() {
-            ctx.fillStyle = '#050505';
-            ctx.fillRect(0, 0, width, height);
+        function drawBranch(x, y, len, angle, branchWidth) {
+            ctx.beginPath();
+            ctx.save();
+            ctx.strokeStyle = "#4d2600"; // Wood color
+            ctx.lineWidth = branchWidth;
+            ctx.translate(x, y);
+            ctx.rotate(angle * Math.PI / 180);
+            ctx.moveTo(0, 0);
+            ctx.lineTo(0, -len);
+            ctx.stroke();
 
-            // Draw Stars with Parallax
-            ctx.fillStyle = "white";
-            stars.forEach(s => {
-                let px = s.x + (tilt.x * s.z * 10);
-                let py = s.y + (tilt.y * s.z * 10);
-                ctx.globalAlpha = s.o;
-                ctx.beginPath();
-                ctx.arc(px, py, s.z, 0, Math.PI * 2);
-                ctx.fill();
-            });
-
-            // Particles Logic
-            particles.forEach((p, i) => {
-                p.x += p.vx;
-                p.y += p.vy;
-                p.alpha *= 0.96;
-                ctx.globalAlpha = p.alpha;
-                ctx.fillStyle = p.color;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                ctx.fill();
-                if (p.alpha < 0.1) particles.splice(i, 1);
-            });
-
-            requestAnimationFrame(draw);
-        }
-        draw();
-
-        startBtn.addEventListener('click', () => {
-            // Big Bang Particles
-            for (let i = 0; i < 80; i++) {
-                particles.push({
-                    x: width / 2, y: height / 2,
-                    vx: (Math.random() - 0.5) * 15,
-                    vy: (Math.random() - 0.5) * 15,
-                    size: Math.random() * 3,
-                    color: i % 2 === 0 ? '#ffd700' : '#00f3ff',
-                    alpha: 1
-                });
+            if (len < 15) {
+                // Draw Heart Leaf
+                drawHeart(0, -len, 10, `rgba(255, ${Math.random()*100 + 50}, ${Math.random()*150 + 100}, 0.8)`);
+                ctx.restore();
+                return;
             }
 
-            gsap.to(intro, {
-                opacity: 0, duration: 1, onComplete: () => {
-                    intro.style.display = 'none';
-                    ui.style.display = 'block';
-                    document.body.style.overflow = 'auto';
-                    gsap.to(ui, { opacity: 1, duration: 1 });
-                }
-            });
+            // Growing logic
+            setTimeout(() => {
+                drawBranch(0, -len, len * 0.8, angle - 15, branchWidth * 0.7);
+                drawBranch(0, -len, len * 0.8, angle + 15, branchWidth * 0.7);
+            }, 50);
+
+            ctx.restore();
+        }
+
+        // 3. MAIN LOOP
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            
+            // Background Gradient
+            const g = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, width);
+            g.addColorStop(0, '#1a050d');
+            g.addColorStop(1, '#050505');
+            ctx.fillStyle = g;
+            ctx.fillRect(0,0, width, height);
+
+            stars.forEach(s => s.draw());
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // 4. THE SEQUENCE
+        document.getElementById('startBtn').addEventListener('click', () => {
+            document.getElementById('overlay').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('overlay').style.display = 'none';
+                
+                // Grow Tree
+                drawBranch(width/2, height, height/4, 0, 10);
+                
+                // Animate Words
+                const wishes = document.querySelectorAll('.wish');
+                const tl = gsap.timeline();
+                
+                wishes.forEach((w, i) => {
+                    tl.to(w, { opacity: 1, y: 0, duration: 1.5, ease: "power2.out" })
+                      .to(w, { opacity: 0, y: -30, duration: 1, ease: "power2.in" }, "+=1");
+                });
+            }, 1000);
         });
     </script>
 </body>
-
 </html>
