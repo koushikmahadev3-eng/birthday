@@ -2,482 +2,674 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NEBULA OS | Anniversary Edition</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100;300;600;900&family=Syncopate:wght@400;700&display=swap" rel="stylesheet">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday - Interdimensional Celebration</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <style>
-        /* CSS ARCHITECTURE: 
-           High-performance layout using Grid and Hardware Acceleration
-        */
-        :root {
-            --accent: #00f3ff;
-            --gold: #ffd700;
-            --bg: #050505;
-            --glass: rgba(255, 255, 255, 0.03);
-            --border: rgba(255, 255, 255, 0.1);
-        }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-font-smoothing: antialiased;
         }
-
-        body, html {
-            width: 100%;
-            height: 100%;
-            background: var(--bg);
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
             color: #fff;
-            font-family: 'Outfit', sans-serif;
-            overflow: hidden;
+            overflow-x: hidden;
+            cursor: none;
         }
-
-        /* Dual-Pane Layout */
-        #master-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            width: 200vw; /* For mobile side-by-side or desktop split */
+        
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
             height: 100vh;
-            transition: transform 0.8s cubic-bezier(0.85, 0, 0.15, 1);
+            z-index: 1;
         }
-
-        @media (min-width: 1024px) {
-            #master-container {
-                width: 100vw;
-            }
+        
+        .scroll-content {
+            position: relative;
+            z-index: 2;
+            pointer-events: none;
         }
-
-        /* Left Pane: Message Engine */
-        #message-pane {
+        
+        .section {
             height: 100vh;
             display: flex;
-            flex-direction: column;
+            align-items: center;
             justify-content: center;
-            padding: 10% 8%;
-            background: linear-gradient(90deg, #000 0%, transparent 100%);
-            z-index: 5;
-            border-right: 1px solid var(--border);
-            overflow-y: auto;
-            scrollbar-width: none;
+            flex-direction: column;
+            padding: 40px;
+            pointer-events: all;
         }
-
-        #message-pane::-webkit-scrollbar { display: none; }
-
-        .tagline {
-            font-family: 'Syncopate', sans-serif;
-            font-size: 0.8rem;
-            letter-spacing: 0.5em;
-            color: var(--accent);
-            margin-bottom: 20px;
-            text-transform: uppercase;
-        }
-
-        .main-title {
-            font-size: clamp(3rem, 8vw, 6rem);
-            font-weight: 900;
-            line-height: 0.9;
-            margin-bottom: 30px;
-        }
-
-        .scrolling-messages {
-            margin-top: 50px;
-        }
-
-        .msg-card {
-            background: var(--glass);
-            border: 1px solid var(--border);
-            padding: 30px;
-            border-radius: 20px;
-            margin-bottom: 20px;
-            backdrop-filter: blur(10px);
-            opacity: 0;
-            transform: translateX(-50px);
-        }
-
-        /* Right Pane: WebGL Engine */
-        #canvas-pane {
-            position: relative;
+        
+        .hero {
             height: 100vh;
-            background: #000;
-            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
         }
-
-        canvas {
+        
+        .title {
+            font-size: clamp(40px, 10vw, 120px);
+            font-weight: bold;
+            text-align: center;
+            background: linear-gradient(45deg, #ff00ff, #00ffff, #ff00ff);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 3s ease infinite;
+            text-shadow: 0 0 50px rgba(255, 0, 255, 0.5);
+            letter-spacing: 0.1em;
+            transform-style: preserve-3d;
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .subtitle {
+            font-size: clamp(16px, 3vw, 32px);
+            margin-top: 20px;
+            opacity: 0;
+            color: #0ff;
+            text-shadow: 0 0 20px #0ff;
+            letter-spacing: 0.3em;
+        }
+        
+        .message-box {
+            background: rgba(0, 255, 255, 0.05);
+            border: 2px solid #0ff;
+            padding: 40px;
+            max-width: 800px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 50px rgba(0, 255, 255, 0.3), inset 0 0 50px rgba(0, 255, 255, 0.1);
+            transform: perspective(1000px) rotateX(0deg);
+            opacity: 0;
+        }
+        
+        .message-box h2 {
+            font-size: clamp(24px, 5vw, 48px);
+            margin-bottom: 20px;
+            color: #ff00ff;
+            text-shadow: 0 0 30px #ff00ff;
+        }
+        
+        .message-box p {
+            font-size: clamp(14px, 2vw, 20px);
+            line-height: 1.8;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        
+        .glitch {
+            position: relative;
+            animation: glitch 2s infinite;
+        }
+        
+        @keyframes glitch {
+            0%, 90%, 100% { transform: translate(0); }
+            92% { transform: translate(-2px, 2px); }
+            94% { transform: translate(2px, -2px); }
+            96% { transform: translate(-2px, -2px); }
+            98% { transform: translate(2px, 2px); }
+        }
+        
+        .pixel-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            display: block;
-            touch-action: none;
+            background-image: 
+                repeating-linear-gradient(0deg, rgba(0, 255, 255, 0.03) 0px, transparent 1px, transparent 2px, rgba(0, 255, 255, 0.03) 3px),
+                repeating-linear-gradient(90deg, rgba(255, 0, 255, 0.03) 0px, transparent 1px, transparent 2px, rgba(255, 0, 255, 0.03) 3px);
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0.5;
         }
-
-        /* Interface Elements */
-        #ui-overlay {
+        
+        #custom-cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #0ff;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.1s ease;
+            box-shadow: 0 0 20px #0ff, inset 0 0 20px #0ff;
+        }
+        
+        #custom-cursor::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 4px;
+            height: 4px;
+            background: #0ff;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #0ff;
+        }
+        
+        .stats {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            font-size: 12px;
+            color: #0ff;
+            text-shadow: 0 0 10px #0ff;
+            z-index: 100;
+            font-family: 'Courier New', monospace;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border: 1px solid #0ff;
+            border-radius: 5px;
+        }
+        
+        .scroll-indicator {
             position: fixed;
             bottom: 40px;
-            right: 40px;
-            display: flex;
-            gap: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #0ff;
+            font-size: 14px;
+            text-shadow: 0 0 10px #0ff;
             z-index: 100;
+            animation: pulse 2s infinite;
         }
-
-        .control-btn {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            border: 1px solid var(--border);
-            background: var(--glass);
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            backdrop-filter: blur(10px);
-            transition: 0.3s;
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            50% { opacity: 0.5; transform: translateX(-50%) translateY(10px); }
         }
-
-        .control-btn:hover {
-            border-color: var(--accent);
-            background: rgba(0, 243, 255, 0.1);
-        }
-
-        /* Intro Screen */
-        #boot-sequence {
+        
+        .data-stream {
             position: fixed;
-            inset: 0;
-            background: #000;
-            z-index: 9999;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
-
-        .loader-bar {
-            width: 200px;
-            height: 2px;
-            background: #222;
-            margin-top: 20px;
-            position: relative;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 10px;
+            color: #0f0;
+            opacity: 0.3;
+            z-index: 100;
+            max-height: 80vh;
             overflow: hidden;
+            font-family: 'Courier New', monospace;
+            pointer-events: none;
         }
-
-        .loader-progress {
+        
+        .finale {
+            height: 150vh;
+            background: radial-gradient(circle at center, rgba(255, 0, 255, 0.2), transparent);
+        }
+        
+        .wish-container {
+            text-align: center;
+            opacity: 0;
+        }
+        
+        .wish-container h1 {
+            font-size: clamp(48px, 12vw, 150px);
+            background: linear-gradient(45deg, #ff00ff, #00ffff, #ffff00, #ff00ff);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: rainbowShift 5s ease infinite;
+            text-shadow: 0 0 80px rgba(255, 0, 255, 0.8);
+        }
+        
+        @keyframes rainbowShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .sparkle {
             position: absolute;
-            left: 0;
+            width: 4px;
+            height: 4px;
+            background: #fff;
+            border-radius: 50%;
+            animation: sparkleAnim 2s infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes sparkleAnim {
+            0%, 100% { opacity: 0; transform: scale(0); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+        
+        .hologram {
+            position: relative;
+        }
+        
+        .hologram::before {
+            content: '';
+            position: absolute;
             top: 0;
-            height: 100%;
-            width: 0%;
-            background: var(--accent);
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(transparent 50%, rgba(0, 255, 255, 0.1) 50%);
+            background-size: 100% 4px;
+            pointer-events: none;
+            animation: scan 8s linear infinite;
+        }
+        
+        @keyframes scan {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 100%; }
         }
     </style>
 </head>
 <body>
-
-    <div id="boot-sequence">
-        <div style="font-family: 'Syncopate'; font-size: 10px; letter-spacing: 5px;">INITIALIZING KINETIC CORE</div>
-        <div class="loader-bar">
-            <div class="loader-progress" id="load-progress"></div>
+    <div id="custom-cursor"></div>
+    <div class="pixel-grid"></div>
+    
+    <div class="stats">
+        <div>FPS: <span id="fps">60</span></div>
+        <div>PARTICLES: <span id="particle-count">0</span></div>
+        <div>SCROLL: <span id="scroll-progress">0</span>%</div>
+    </div>
+    
+    <div class="data-stream" id="data-stream"></div>
+    
+    <div id="canvas-container"></div>
+    
+    <div class="scroll-content">
+        <div class="section hero">
+            <h1 class="title glitch">HAPPY BIRTHDAY</h1>
+            <p class="subtitle">INITIATING CELEBRATION PROTOCOL</p>
+        </div>
+        
+        <div class="section">
+            <div class="message-box hologram">
+                <h2>The Journey Begins</h2>
+                <p>Today marks another revolution around our star, another year of evolution, growth, and infinite possibilities. You are the architect of digital dreams, the conductor of electronic symphonies.</p>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="message-box hologram">
+                <h2>Infinite Potential</h2>
+                <p>Like particles in this quantum field, your energy radiates across dimensions. Each moment is a new vertex in the geometry of your existence, each decision a transformation in the matrix of reality.</p>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="message-box hologram">
+                <h2>Code of Excellence</h2>
+                <p>You don't just write code—you compose algorithms of inspiration. You don't just solve problems—you redefine what's possible. The universe itself compiles your dreams into reality.</p>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="message-box hologram">
+                <h2>Celebration Sequence</h2>
+                <p>As we traverse this digital tapestry, know that you are celebrated not just today, but in every moment. Your impact ripples through time and space, creating waves of positive change.</p>
+            </div>
+        </div>
+        
+        <div class="section finale">
+            <div class="wish-container">
+                <h1>🎂 MAKE A WISH 🎂</h1>
+                <p style="font-size: clamp(18px, 3vw, 36px); color: #fff; text-shadow: 0 0 20px #fff; margin-top: 30px;">
+                    May this year bring you limitless joy, boundless creativity, and infinite success!
+                </p>
+            </div>
         </div>
     </div>
-
-    <div id="master-container">
-        <section id="message-pane">
-            <div class="tagline">Year 2026 Edition</div>
-            <h1 class="main-title">HAPPY<br><span style="color: var(--gold)">BIRTHDAY</span></h1>
-            
-            <div class="scrolling-messages" id="msg-container">
-                <div class="msg-card">
-                    <h3>The Visionary</h3>
-                    <p>May your creativity continue to reshape the world. You don't just follow the path; you build it.</p>
-                </div>
-                <div class="msg-card">
-                    <h3>Absolute Excellence</h3>
-                    <p>On your special day, we celebrate the drive and the logic that makes you a legend.</p>
-                </div>
-                <div class="msg-card">
-                    <h3>God-Tier Spirit</h3>
-                    <p>Keep pushing the boundaries of what is possible. The universe is your playground.</p>
-                </div>
-                <div class="msg-card">
-                    <h3>Infinity Beyond</h3>
-                    <p>Scroll deeper to unlock the hidden memories of this digital odyssey.</p>
-                </div>
-            </div>
-        </section>
-
-        <section id="canvas-pane">
-            <canvas id="nebula-canvas"></canvas>
-            
-            <div style="position: absolute; top: 40px; left: 40px; pointer-events: none;">
-                <div style="font-size: 10px; color: var(--accent); opacity: 0.6;">SYSTEM STATUS: OPTIMIZED</div>
-                <div id="fps-counter" style="font-size: 24px; font-weight: 100;">60 FPS</div>
-            </div>
-        </section>
-    </div>
-
-    <div id="ui-overlay">
-        <div class="control-btn" id="switch-view">↔</div>
-        <div class="control-btn" id="reset-sim">↺</div>
-    </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-
-    <script id="v-shader" type="x-shader/x-vertex">
-        attribute vec2 position;
-        varying vec2 vUv;
-        void main() {
-            vUv = position * 0.5 + 0.5;
-            gl_Position = vec4(position, 0.0, 1.0);
-        }
-    </script>
-
-    <script id="f-shader" type="x-shader/x-fragment">
-        /* GOD-TIER FRAGMENT SHADER 
-           Implements: Fractional Brownian Motion, Domain Warping, and Light Scattering
-        */
-        precision highp float;
-        uniform float uTime;
-        uniform vec2 uResolution;
-        uniform vec2 uMouse;
-        uniform float uMouseActive;
-        varying vec2 vUv;
-
-        // High frequency hashing for noise
-        float hash(vec2 p) {
-            p = fract(p * vec2(123.34, 456.21));
-            p += dot(p, p + 45.32);
-            return fract(p.x * p.y);
-        }
-
-        // 2D Noise function
-        float noise(vec2 p) {
-            vec2 i = floor(p);
-            vec2 f = fract(p);
-            float a = hash(i);
-            float b = hash(i + vec2(1.0, 0.0));
-            float c = hash(i + vec2(0.0, 1.0));
-            float d = hash(i + vec2(1.0, 1.0));
-            vec2 u = f * f * (3.0 - 2.0 * f);
-            return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
-        }
-
-        // Fractional Brownian Motion (Complex layers)
-        float fbm(vec2 p) {
-            float v = 0.0;
-            float a = 0.5;
-            vec2 shift = vec2(100.0);
-            mat2 rot = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.5));
-            for (int i = 0; i < 8; ++i) {
-                v += a * noise(p);
-                p = rot * p * 2.0 + shift;
-                a *= 0.5;
-            }
-            return v;
-        }
-
-        void main() {
-            vec2 uv = gl_FragCoord.xy / uResolution.xy;
-            vec2 p = (gl_FragCoord.xy * 2.0 - uResolution.xy) / min(uResolution.x, uResolution.y);
-            
-            // Domain Warping (The Secret to God-Tier fluid look)
-            vec2 q = vec2(
-                fbm(p + vec2(0.0, 0.0)),
-                fbm(p + vec2(5.2, 1.3))
-            );
-            
-            vec2 r = vec2(
-                fbm(p + 4.0 * q + vec2(1.7, 9.2) + 0.15 * uTime),
-                fbm(p + 4.0 * q + vec2(8.3, 2.8) + 0.126 * uTime)
-            );
-
-            float f = fbm(p + 4.0 * r);
-
-            // Interaction logic
-            float dist = length(p - (uMouse * 2.0 - 1.0) * vec2(uResolution.x/uResolution.y, 1.0));
-            float mouseInfluence = smoothstep(0.4, 0.0, dist) * uMouseActive;
-
-            // Coloring logic
-            vec3 color = mix(
-                vec3(0.02, 0.01, 0.05), // Deep space
-                vec3(0.0, 0.6, 1.0),    // Electric cyan
-                clamp((f * f) * 4.0, 0.0, 1.0)
-            );
-
-            color = mix(
-                color,
-                vec3(1.0, 0.84, 0.0),   // Birthday Gold
-                clamp(length(q), 0.0, 1.0) * 0.4
-            );
-
-            color = mix(
-                color,
-                vec3(1.0, 1.0, 1.0),
-                clamp(length(r.x), 0.0, 1.0) * 0.1
-            );
-
-            // Final intensity polish
-            float intensity = f * f * f * 1.5 + 0.2 * f * f + 0.5 * f;
-            intensity += mouseInfluence * 0.5;
-            
-            gl_FragColor = vec4(color * intensity, 1.0);
-        }
-    </script>
+    
+    <div class="scroll-indicator">↓ SCROLL TO EXPLORE ↓</div>
 
     <script>
-        /**
-         * LOGIC CORE
-         * This script manages the state, the WebGL lifecycle, and the dual-pane transitions.
-         */
-        const CONFIG = {
-            particleCount: 5000,
-            simSpeed: 0.005,
-            glowIntensity: 1.5,
-            dualPane: true
-        };
-
-        class NebulaEngine {
-            constructor(canvasId) {
-                this.canvas = document.getElementById(canvasId);
-                this.gl = this.canvas.getContext('webgl');
-                this.startTime = Date.now();
-                this.mouse = { x: 0.5, y: 0.5, active: 0 };
-                this.fpsData = {
-                    lastTime: 0,
-                    frames: 0
-                };
-                
-                if (!this.gl) {
-                    alert('WebGL not supported on this device');
-                    return;
-                }
-
-                this.init();
-            }
-
-            init() {
-                this.createProgram();
-                this.createBuffers();
-                this.setupEvents();
-                this.resize();
-                this.animate();
-            }
-
-            createProgram() {
-                const vs = this.compileShader(this.gl.VERTEX_SHADER, document.getElementById('v-shader').text);
-                const fs = this.compileShader(this.gl.FRAGMENT_SHADER, document.getElementById('f-shader').text);
-                
-                this.program = this.gl.createProgram();
-                this.gl.attachShader(this.program, vs);
-                this.gl.attachShader(this.program, fs);
-                this.gl.linkProgram(this.program);
-                this.gl.useProgram(this.program);
-            }
-
-            compileShader(type, source) {
-                const shader = this.gl.createShader(type);
-                this.gl.shaderSource(shader, source);
-                this.gl.compileShader(shader);
-                if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
-                    console.error(this.gl.getShaderInfoLog(shader));
-                    this.gl.deleteShader(shader);
-                    return null;
-                }
-                return shader;
-            }
-
-            createBuffers() {
-                this.buffer = this.gl.createBuffer();
-                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);
-                this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array([
-                    -1.0, -1.0, 1.0, -1.0, -1.0, 1.0,
-                    -1.0, 1.0, 1.0, -1.0, 1.0, 1.0
-                ]), this.gl.STATIC_DRAW);
-
-                const posLoc = this.gl.getAttribLocation(this.program, 'position');
-                this.gl.enableVertexAttribArray(posLoc);
-                this.gl.vertexAttribPointer(posLoc, 2, this.gl.FLOAT, false, 0, 0);
-            }
-
-            setupEvents() {
-                const handlePointer = (e) => {
-                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                    
-                    // Normalize mouse to the canvas-pane area
-                    const rect = this.canvas.getBoundingClientRect();
-                    this.mouse.x = (clientX - rect.left) / rect.width;
-                    this.mouse.y = 1.0 - (clientY - rect.top) / rect.height;
-                    this.mouse.active = 1.0;
-                };
-
-                window.addEventListener('mousemove', handlePointer);
-                window.addEventListener('touchstart', handlePointer);
-                window.addEventListener('touchend', () => {
-                    gsap.to(this.mouse, { active: 0, duration: 2 });
-                });
-            }
-
-            resize() {
-                const dpr = Math.min(window.devicePixelRatio, 2); // Limit for perf
-                this.canvas.width = this.canvas.clientWidth * dpr;
-                this.canvas.height = this.canvas.clientHeight * dpr;
-                this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
-            }
-
-            updateFPS() {
-                const now = performance.now();
-                this.fpsData.frames++;
-                if (now > this.fpsData.lastTime + 1000) {
-                    const fps = Math.round((this.fpsData.frames * 1000) / (now - this.fpsData.lastTime));
-                    document.getElementById('fps-counter').innerText = `${fps} FPS`;
-                    this.fpsData.lastTime = now;
-                    this.fpsData.frames = 0;
-                }
-            }
-
-            animate() {
-                this.updateFPS();
-                const time = (Date.now() - this.startTime) * 0.001;
-                
-                this.gl.uniform1f(this.gl.getUniformLocation(this.program, 'uTime'), time);
-                this.gl.uniform2f(this.gl.getUniformLocation(this.program, 'uResolution'), this.canvas.width, this.canvas.height);
-                this.gl.uniform2f(this.gl.getUniformLocation(this.program, 'uMouse'), this.mouse.x, this.mouse.y);
-                this.gl.uniform1f(this.gl.getUniformLocation(this.program, 'uMouseActive'), this.mouse.active);
-
-                this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
-                requestAnimationFrame(() => this.animate());
-            }
+        // GSAP ScrollTrigger Registration
+        gsap.registerPlugin(ScrollTrigger);
+        
+        // Custom Cursor
+        const cursor = document.getElementById('custom-cursor');
+        let mouseX = 0, mouseY = 0;
+        let cursorX = 0, cursorY = 0;
+        
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+        
+        function updateCursor() {
+            cursorX += (mouseX - cursorX) * 0.1;
+            cursorY += (mouseY - cursorY) * 0.1;
+            cursor.style.left = cursorX + 'px';
+            cursor.style.top = cursorY + 'px';
+            requestAnimationFrame(updateCursor);
         }
-
-        // Initialize Everything
-        window.onload = () => {
-            const engine = new NebulaEngine('nebula-canvas');
+        updateCursor();
+        
+        // Data Stream Effect
+        const dataStream = document.getElementById('data-stream');
+        const chars = '01';
+        function generateDataStream() {
+            let stream = '';
+            for(let i = 0; i < 50; i++) {
+                stream += chars[Math.floor(Math.random() * chars.length)] + '\n';
+            }
+            dataStream.textContent = stream;
+        }
+        setInterval(generateDataStream, 100);
+        
+        // Three.js Setup
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
+        
+        camera.position.z = 5;
+        
+        // Particle System Configuration
+        const particleCount = 15000;
+        const positions = new Float32Array(particleCount * 3);
+        const velocities = new Float32Array(particleCount * 3);
+        const colors = new Float32Array(particleCount * 3);
+        const sizes = new Float32Array(particleCount);
+        
+        for(let i = 0; i < particleCount; i++) {
+            const i3 = i * 3;
+            positions[i3] = (Math.random() - 0.5) * 20;
+            positions[i3 + 1] = (Math.random() - 0.5) * 20;
+            positions[i3 + 2] = (Math.random() - 0.5) * 20;
             
-            // Boot Animation Sequence
-            const tl = gsap.timeline();
-            tl.to("#load-progress", { width: "100%", duration: 2, ease: "power2.inOut" })
-              .to("#boot-sequence", { y: "-100%", duration: 1, ease: "expo.inOut" })
-              .to(".msg-card", { 
-                  opacity: 1, 
-                  x: 0, 
-                  stagger: 0.2, 
-                  duration: 1, 
-                  ease: "back.out(1.7)" 
-              }, "-=0.5");
-
-            // View Switcher (Mobile Logic)
-            let isPaneView = false;
-            document.getElementById('switch-view').onclick = () => {
-                const container = document.getElementById('master-container');
-                isPaneView = !isPaneView;
-                container.style.transform = isPaneView ? "translateX(-100vw)" : "translateX(0)";
-            };
-
-            // Resize observer for the canvas
-            window.addEventListener('resize', () => engine.resize());
-        };
+            velocities[i3] = (Math.random() - 0.5) * 0.02;
+            velocities[i3 + 1] = (Math.random() - 0.5) * 0.02;
+            velocities[i3 + 2] = (Math.random() - 0.5) * 0.02;
+            
+            colors[i3] = Math.random();
+            colors[i3 + 1] = Math.random() * 0.5 + 0.5;
+            colors[i3 + 2] = 1;
+            
+            sizes[i] = Math.random() * 3 + 1;
+        }
+        
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+        
+        const material = new THREE.ShaderMaterial({
+            uniforms: {
+                time: { value: 0 },
+                mousePos: { value: new THREE.Vector2(0, 0) },
+                scrollProgress: { value: 0 }
+            },
+            vertexShader: `
+                attribute float size;
+                attribute vec3 color;
+                varying vec3 vColor;
+                uniform float time;
+                uniform vec2 mousePos;
+                uniform float scrollProgress;
+                
+                void main() {
+                    vColor = color;
+                    vec3 pos = position;
+                    
+                    // Wave effect
+                    float wave = sin(pos.x * 0.5 + time) * cos(pos.y * 0.5 + time) * 0.3;
+                    pos.z += wave;
+                    
+                    // Spiral based on scroll
+                    float angle = scrollProgress * 10.0 + length(pos.xy) * 0.5;
+                    float radius = length(pos.xy);
+                    pos.x = cos(angle) * radius;
+                    pos.y = sin(angle) * radius;
+                    
+                    // Mouse interaction
+                    vec2 mouseOffset = (mousePos - vec2(pos.xy)) * 0.1;
+                    float dist = length(mouseOffset);
+                    if(dist < 2.0) {
+                        pos.xy -= mouseOffset * (2.0 - dist) * 0.5;
+                    }
+                    
+                    vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+                    gl_PointSize = size * (300.0 / -mvPosition.z);
+                    gl_Position = projectionMatrix * mvPosition;
+                }
+            `,
+            fragmentShader: `
+                varying vec3 vColor;
+                uniform float time;
+                
+                void main() {
+                    vec2 center = gl_PointCoord - vec2(0.5);
+                    float dist = length(center);
+                    
+                    if(dist > 0.5) discard;
+                    
+                    float alpha = 1.0 - (dist * 2.0);
+                    alpha *= (sin(time * 2.0) * 0.3 + 0.7);
+                    
+                    vec3 finalColor = vColor;
+                    finalColor += vec3(sin(time), cos(time), sin(time * 0.5)) * 0.2;
+                    
+                    gl_FragColor = vec4(finalColor, alpha);
+                }
+            `,
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+            vertexColors: true
+        });
+        
+        const particles = new THREE.Points(geometry, material);
+        scene.add(particles);
+        
+        // Geometric Shapes
+        const torusGeometry = new THREE.TorusGeometry(2, 0.3, 16, 100);
+        const torusMaterial = new THREE.MeshBasicMaterial({ 
+            color: 0x00ffff, 
+            wireframe: true,
+            transparent: true,
+            opacity: 0.3
+        });
+        const torus = new THREE.Mesh(torusGeometry, torusMaterial);
+        scene.add(torus);
+        
+        const sphereGeometry = new THREE.SphereGeometry(1.5, 32, 32);
+        const sphereMaterial = new THREE.MeshBasicMaterial({
+            color: 0xff00ff,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.2
+        });
+        const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+        scene.add(sphere);
+        
+        // Animation Variables
+        let time = 0;
+        let scrollProgress = 0;
+        const mousePosition = new THREE.Vector2(0, 0);
+        
+        // Mouse tracking for 3D interaction
+        document.addEventListener('mousemove', (e) => {
+            mousePosition.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mousePosition.y = -(e.clientY / window.innerHeight) * 2 + 1;
+        });
+        
+        // FPS Counter
+        let lastTime = performance.now();
+        let frames = 0;
+        let fps = 60;
+        
+        // Animation Loop
+        function animate() {
+            requestAnimationFrame(animate);
+            time += 0.016;
+            
+            // Update FPS
+            frames++;
+            const currentTime = performance.now();
+            if(currentTime >= lastTime + 1000) {
+                fps = Math.round((frames * 1000) / (currentTime - lastTime));
+                document.getElementById('fps').textContent = fps;
+                frames = 0;
+                lastTime = currentTime;
+            }
+            
+            // Update scroll progress
+            scrollProgress = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+            document.getElementById('scroll-progress').textContent = Math.round(scrollProgress * 100);
+            
+            // Update shader uniforms
+            material.uniforms.time.value = time;
+            material.uniforms.mousePos.value.copy(mousePosition);
+            material.uniforms.scrollProgress.value = scrollProgress;
+            
+            // Particle animation
+            const posArray = geometry.attributes.position.array;
+            for(let i = 0; i < particleCount; i++) {
+                const i3 = i * 3;
+                posArray[i3] += velocities[i3];
+                posArray[i3 + 1] += velocities[i3 + 1];
+                posArray[i3 + 2] += velocities[i3 + 2];
+                
+                // Boundary check
+                if(Math.abs(posArray[i3]) > 10) velocities[i3] *= -1;
+                if(Math.abs(posArray[i3 + 1]) > 10) velocities[i3 + 1] *= -1;
+                if(Math.abs(posArray[i3 + 2]) > 10) velocities[i3 + 2] *= -1;
+            }
+            geometry.attributes.position.needsUpdate = true;
+            
+            // Rotate geometric shapes
+            torus.rotation.x = time * 0.3 + scrollProgress * Math.PI * 2;
+            torus.rotation.y = time * 0.2;
+            torus.position.x = Math.sin(time * 0.5) * 3;
+            
+            sphere.rotation.y = -time * 0.4;
+            sphere.rotation.z = time * 0.3 + scrollProgress * Math.PI;
+            sphere.position.y = Math.cos(time * 0.3) * 2;
+            
+            // Camera movement
+            camera.position.x = mousePosition.x * 2;
+            camera.position.y = mousePosition.y * 2;
+            camera.lookAt(scene.position);
+            
+            // Particle count display
+            document.getElementById('particle-count').textContent = particleCount.toLocaleString();
+            
+            renderer.render(scene, camera);
+        }
+        
+        animate();
+        
+        // GSAP Scroll Animations
+        gsap.to('.subtitle', {
+            opacity: 1,
+            y: 0,
+            duration: 1,
+            delay: 0.5,
+            ease: 'power3.out'
+        });
+        
+        gsap.utils.toArray('.message-box').forEach((box, i) => {
+            gsap.fromTo(box, 
+                {
+                    opacity: 0,
+                    y: 100,
+                    rotateX: -15
+                },
+                {
+                    opacity: 1,
+                    y: 0,
+                    rotateX: 0,
+                    duration: 1,
+                    ease: 'power3.out',
+                    scrollTrigger: {
+                        trigger: box,
+                        start: 'top 80%',
+                        end: 'top 20%',
+                        toggleActions: 'play none none reverse'
+                    }
+                }
+            );
+        });
+        
+        gsap.to('.wish-container', {
+            opacity: 1,
+            scale: 1,
+            duration: 2,
+            ease: 'elastic.out(1, 0.5)',
+            scrollTrigger: {
+                trigger: '.finale',
+                start: 'top 50%',
+                end: 'bottom bottom',
+                toggleActions: 'play none none reverse'
+            }
+        });
+        
+        gsap.to('.scroll-indicator', {
+            opacity: 0,
+            scrollTrigger: {
+                start: 'top top',
+                end: '100px top',
+                scrub: true
+            }
+        });
+        
+        // Title morphing animation
+        const title = document.querySelector('.title');
+        gsap.to(title, {
+            scale: 1.2,
+            duration: 2,
+            ease: 'sine.inOut',
+            yoyo: true,
+            repeat: -1
+        });
+        
+        // Create sparkles
+        function createSparkle() {
+            const sparkle = document.createElement('div');
+            sparkle.className = 'sparkle';
+            sparkle.style.left = Math.random() * window.innerWidth + 'px';
+            sparkle.style.top = Math.random() * window.innerHeight + 'px';
+            document.body.appendChild(sparkle);
+            
+            setTimeout(() => sparkle.remove(), 2000);
+        }
+        
+        setInterval(createSparkle, 300);
+        
+        // Window resize handler
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        // Parallax effect on scroll
+        window.addEventListener('scroll', () => {
+            const scrolled = window.scrollY;
+            particles.rotation.y = scrolled * 0.001;
+            particles.rotation.x = scrolled * 0.0005;
+        });
+        
+        console.log('%c🎉 BIRTHDAY CELEBRATION INITIALIZED 🎉', 'color: #0ff; font-size: 20px; font-weight: bold;');
+        console.log('%cGPGPU Particles: ACTIVE', 'color: #0f0;');
+        console.log('%c3D Graphics: RENDERING', 'color: #f0f;');
+        console.log('%cScroll Animations: LOADED', 'color: #ff0;');
     </script>
 </body>
 </html>
